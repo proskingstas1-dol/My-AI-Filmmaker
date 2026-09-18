@@ -131,3 +131,1002 @@ load();
 </script>
 </body>
 </html>
+<script>
+
+/* ==========================================
+   MY AI FILMMAKER V2
+   AI DIRECTOR ENGINE
+   ========================================== */
+
+let directorFilm = null;
+
+
+/* OPEN DIRECTOR */
+
+function openDirector() {
+
+  document.querySelectorAll("section").forEach(function(section) {
+    section.style.display = "none";
+  });
+
+  const director = document.getElementById("director");
+
+  if (director) {
+    director.style.display = "block";
+    window.scrollTo(0,0);
+  }
+}
+
+
+/* CLOSE DIRECTOR */
+
+function closeDirector() {
+
+  const director = document.getElementById("director");
+
+  if (director) {
+    director.style.display = "none";
+  }
+
+  /* Return to existing home screen */
+
+  const home =
+    document.getElementById("home") ||
+    document.querySelector("main");
+
+  if (home) {
+    home.style.display = "";
+  }
+
+  window.scrollTo(0,0);
+}
+
+
+/* ==========================================
+   BUILD FILM
+   ========================================== */
+
+function runAIDirector() {
+
+  const idea =
+    document.getElementById("directorIdea").value.trim();
+
+  if (!idea) {
+
+    alert("Tell the Director your film idea first.");
+
+    return;
+  }
+
+
+  const genre =
+    document.getElementById("directorGenre").value;
+
+  const style =
+    document.getElementById("directorStyle").value;
+
+  const numberOfScenes =
+    Number(document.getElementById("directorScenes").value);
+
+
+  const title = createFilmTitle(idea);
+
+  const protagonist = createProtagonist(idea);
+
+  const supportingCharacter =
+    createSupportingCharacter(idea);
+
+
+  directorFilm = {
+
+    idea: idea,
+
+    title: title,
+
+    genre: genre,
+
+    style: style,
+
+    logline:
+      createLogline(idea, protagonist),
+
+    story:
+      createStory(idea, protagonist),
+
+    characters: [
+      protagonist,
+      supportingCharacter
+    ],
+
+    structure:
+      createStructure(idea),
+
+    scenes:
+      createScenes(
+        idea,
+        protagonist,
+        supportingCharacter,
+        numberOfScenes
+      ),
+
+    visual:
+      createVisualDirection(
+        genre,
+        style
+      )
+
+  };
+
+
+  renderDirector();
+
+
+  document.getElementById(
+    "directorResult"
+  ).style.display = "block";
+
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+}
+
+
+/* ==========================================
+   TITLE
+   ========================================== */
+
+function createFilmTitle(idea) {
+
+  const words =
+    idea
+      .replace(/[^\w\s]/g,"")
+      .split(/\s+/)
+      .filter(Boolean);
+
+
+  if (words.length >= 3) {
+
+    return (
+      words[0].charAt(0).toUpperCase() +
+      words[0].slice(1) +
+      " of Tomorrow"
+    );
+
+  }
+
+
+  return "The Beginning";
+}
+
+
+/* ==========================================
+   LOG LINE
+   ========================================== */
+
+function createLogline(idea, protagonist) {
+
+  return (
+    "When " +
+    idea.toLowerCase() +
+    ", " +
+    protagonist.name +
+    " must confront a challenge that could change everything."
+  );
+
+}
+
+
+/* ==========================================
+   STORY
+   ========================================== */
+
+function createStory(idea, protagonist) {
+
+  return (
+    "The story begins with " +
+    protagonist.name +
+    " living an ordinary life before the central mystery or conflict emerges. " +
+
+    "The discovery connected to the film's main idea forces the protagonist " +
+    "into unfamiliar territory. As the situation becomes more dangerous, " +
+    protagonist.name +
+    " must make increasingly difficult choices. " +
+
+    "The final act brings the central conflict to a decisive moment, " +
+    "leaving the audience with an emotional conclusion."
+  );
+
+}
+
+
+/* ==========================================
+   PROTAGONIST
+   ========================================== */
+
+function createProtagonist(idea) {
+
+  return {
+
+    name:"Kofi",
+
+    role:"Protagonist",
+
+    age:"Teenager",
+
+    appearance:
+      "A Ghanaian teenage boy with natural realistic features, expressive eyes and a confident but relatable appearance.",
+
+    personality:
+      "Curious, determined, intelligent and emotionally resilient.",
+
+    clothing:
+      "Simple contemporary clothing appropriate to the environment.",
+
+    purpose:
+      "The central character who drives the story forward."
+
+  };
+
+}
+
+
+/* ==========================================
+   SUPPORTING CHARACTER
+   ========================================== */
+
+function createSupportingCharacter(idea) {
+
+  return {
+
+    name:"Ama",
+
+    role:"Supporting Character",
+
+    age:"Teenager",
+
+    appearance:
+      "A Ghanaian teenage girl with natural realistic features and an expressive face.",
+
+    personality:
+      "Intelligent, observant, courageous and loyal.",
+
+    clothing:
+      "Natural contemporary clothing appropriate to the story.",
+
+    purpose:
+      "Provides another perspective and helps the protagonist confront the central problem."
+
+  };
+
+}
+
+
+/* ==========================================
+   STORY STRUCTURE
+   ========================================== */
+
+function createStructure(idea) {
+
+  return {
+
+    beginning:
+      "The protagonist is introduced and the normal world is established. The central mystery or problem appears.",
+
+    middle:
+      "The protagonist investigates the problem, encounters obstacles and discovers that the situation is more significant than originally believed.",
+
+    climax:
+      "The protagonist must make a major decision and confront the central conflict.",
+
+    ending:
+      "The consequences of the decision are revealed and the story reaches an emotional conclusion."
+
+  };
+
+}
+
+
+/* ==========================================
+   SCENES
+   ========================================== */
+
+function createScenes(
+  idea,
+  protagonist,
+  supporting,
+  count
+) {
+
+  const scenes = [];
+
+
+  const templates = [
+
+    {
+      title:"The Ordinary World",
+
+      purpose:
+        "Introduce the protagonist and establish the world.",
+
+      action:
+        protagonist.name +
+        " goes through an ordinary moment before something unusual interrupts the day.",
+
+      shots:[
+        "Wide establishing shot of the environment.",
+        "Medium shot following the protagonist.",
+        "Close-up showing the protagonist's reaction."
+      ]
+
+    },
+
+    {
+      title:"The Discovery",
+
+      purpose:
+        "The central mystery or problem is revealed.",
+
+      action:
+        protagonist.name +
+        " discovers something connected to the central idea of the film.",
+
+      shots:[
+        "Slow push-in toward the discovery.",
+        "Close-up of the important object or location.",
+        "Reaction close-up."
+      ]
+
+    },
+
+    {
+      title:"The Investigation",
+
+      purpose:
+        "The characters begin searching for answers.",
+
+      action:
+        protagonist.name +
+        " and " +
+        supporting.name +
+        " investigate the situation and uncover a deeper problem.",
+
+      shots:[
+        "Tracking shot as the characters move through the environment.",
+        "Over-the-shoulder investigation shot.",
+        "Close-up of an important clue."
+      ]
+
+    },
+
+    {
+      title:"The Confrontation",
+
+      purpose:
+        "The central conflict reaches its highest tension.",
+
+      action:
+        protagonist.name +
+        " is forced to make a difficult decision.",
+
+      shots:[
+        "Wide cinematic confrontation shot.",
+        "Alternating close-ups of the characters.",
+        "Slow camera movement toward the protagonist."
+      ]
+
+    },
+
+    {
+      title:"The Choice",
+
+      purpose:
+        "The protagonist resolves the central conflict.",
+
+      action:
+        protagonist.name +
+        " makes the decision that determines the outcome of the story.",
+
+      shots:[
+        "Quiet close-up before the decision.",
+        "Wide shot revealing the consequences.",
+        "Final cinematic shot."
+      ]
+
+    }
+
+  ];
+
+
+  for(let i=0;i<count;i++) {
+
+    const template =
+      templates[i % templates.length];
+
+    scenes.push({
+
+      number:i+1,
+
+      title:
+        template.title,
+
+      purpose:
+        template.purpose,
+
+      action:
+        template.action,
+
+      shots:
+        template.shots
+
+    });
+
+  }
+
+
+  return scenes;
+
+}
+
+
+/* ==========================================
+   VISUAL DIRECTION
+   ========================================== */
+
+function createVisualDirection(
+  genre,
+  style
+) {
+
+  return {
+
+    style:
+      style,
+
+    genre:
+      genre,
+
+    camera:
+      "Cinematic camera movement, natural depth of field, controlled framing and purposeful composition.",
+
+    lighting:
+      "Natural cinematic lighting with realistic highlights and shadows.",
+
+    environment:
+      "Detailed realistic environments with believable textures and atmospheric depth.",
+
+    characters:
+      "Photorealistic characters with consistent facial features, clothing and proportions.",
+
+    quality:
+      "High-detail cinematic imagery, realistic materials, natural skin tones and professional film composition."
+
+  };
+
+}
+
+
+/* ==========================================
+   RENDER DIRECTOR
+   ========================================== */
+
+function renderDirector() {
+
+  document.getElementById(
+    "directorTitle"
+  ).value =
+    directorFilm.title;
+
+
+  document.getElementById(
+    "directorLogline"
+  ).value =
+    directorFilm.logline;
+
+
+  document.getElementById(
+    "directorStory"
+  ).value =
+    directorFilm.story;
+
+
+  renderDirectorCharacters();
+
+  renderDirectorStructure();
+
+  renderDirectorScenes();
+
+  renderDirectorVisual();
+
+  renderDirectorPrompts();
+
+}
+
+
+/* ==========================================
+   CHARACTERS
+   ========================================== */
+
+function renderDirectorCharacters() {
+
+  const box =
+    document.getElementById(
+      "directorCharacters"
+    );
+
+  box.innerHTML = "";
+
+
+  directorFilm.characters.forEach(function(character) {
+
+    box.innerHTML += `
+
+      <div class="director-character">
+
+        <h3>${character.name}</h3>
+
+        <p>
+          <strong>Role:</strong>
+          ${character.role}
+        </p>
+
+        <p>
+          <strong>Age:</strong>
+          ${character.age}
+        </p>
+
+        <p>
+          <strong>Appearance:</strong>
+          ${character.appearance}
+        </p>
+
+        <p>
+          <strong>Personality:</strong>
+          ${character.personality}
+        </p>
+
+        <p>
+          <strong>Clothing:</strong>
+          ${character.clothing}
+        </p>
+
+      </div>
+
+    `;
+
+  });
+
+}
+
+
+/* ==========================================
+   STRUCTURE
+   ========================================== */
+
+function renderDirectorStructure() {
+
+  const box =
+    document.getElementById(
+      "directorStructure"
+    );
+
+  box.innerHTML = `
+
+    <div class="director-character">
+      <h3>ACT I — Beginning</h3>
+      <p>${directorFilm.structure.beginning}</p>
+    </div>
+
+    <div class="director-character">
+      <h3>ACT II — Middle</h3>
+      <p>${directorFilm.structure.middle}</p>
+    </div>
+
+    <div class="director-character">
+      <h3>ACT III — Climax</h3>
+      <p>${directorFilm.structure.climax}</p>
+    </div>
+
+    <div class="director-character">
+      <h3>Resolution</h3>
+      <p>${directorFilm.structure.ending}</p>
+    </div>
+
+  `;
+
+}
+
+
+/* ==========================================
+   SCENES
+   ========================================== */
+
+function renderDirectorScenes() {
+
+  const box =
+    document.getElementById(
+      "directorSceneList"
+    );
+
+  box.innerHTML = "";
+
+
+  directorFilm.scenes.forEach(function(scene) {
+
+    let shots = "";
+
+
+    scene.shots.forEach(function(shot,index) {
+
+      shots += `
+
+        <div class="director-shot">
+
+          <strong>
+            Shot ${index + 1}
+          </strong>
+
+          — ${shot}
+
+        </div>
+
+      `;
+
+    });
+
+
+    box.innerHTML += `
+
+      <div class="director-scene">
+
+        <h3>
+          Scene ${scene.number} —
+          ${scene.title}
+        </h3>
+
+        <p>
+          <strong>Purpose:</strong>
+          ${scene.purpose}
+        </p>
+
+        <p>
+          <strong>Action:</strong>
+          ${scene.action}
+        </p>
+
+        ${shots}
+
+      </div>
+
+    `;
+
+  });
+
+}
+
+
+/* ==========================================
+   VISUAL
+   ========================================== */
+
+function renderDirectorVisual() {
+
+  const box =
+    document.getElementById(
+      "directorVisual"
+    );
+
+  box.innerHTML = `
+
+    <div class="director-character">
+
+      <p>
+        <strong>Style:</strong>
+        ${directorFilm.visual.style}
+      </p>
+
+      <p>
+        <strong>Genre:</strong>
+        ${directorFilm.visual.genre}
+      </p>
+
+      <p>
+        <strong>Camera:</strong>
+        ${directorFilm.visual.camera}
+      </p>
+
+      <p>
+        <strong>Lighting:</strong>
+        ${directorFilm.visual.lighting}
+      </p>
+
+      <p>
+        <strong>Environment:</strong>
+        ${directorFilm.visual.environment}
+      </p>
+
+      <p>
+        <strong>Characters:</strong>
+        ${directorFilm.visual.characters}
+      </p>
+
+      <p>
+        <strong>Quality:</strong>
+        ${directorFilm.visual.quality}
+      </p>
+
+    </div>
+
+  `;
+
+}
+
+
+/* ==========================================
+   PROMPTS
+   ========================================== */
+
+function renderDirectorPrompts() {
+
+  const box =
+    document.getElementById(
+      "directorPrompts"
+    );
+
+  box.innerHTML = "";
+
+
+  directorFilm.scenes.forEach(function(scene) {
+
+    const characters =
+      directorFilm.characters
+        .map(c => c.name)
+        .join(", ");
+
+
+    const prompt =
+
+      `${directorFilm.visual.style}, ` +
+      `cinematic ${directorFilm.genre} film, ` +
+      `Scene ${scene.number}: ${scene.title}. ` +
+      `${scene.action} ` +
+      `Characters: ${characters}. ` +
+      `Realistic cinematic environment, ` +
+      `natural lighting, realistic skin tones, ` +
+      `professional cinematography, ` +
+      `natural depth of field, detailed textures, ` +
+      `consistent character appearance, ` +
+      `film-quality composition.`;
+
+
+    box.innerHTML += `
+
+      <div>
+
+        <h3>
+          Scene ${scene.number} Prompt
+        </h3>
+
+        <div class="director-prompt">
+          ${prompt}
+        </div>
+
+      </div>
+
+    `;
+
+  });
+
+}
+
+
+/* ==========================================
+   SEND TO PROJECT
+   ========================================== */
+
+function sendDirectorToProject() {
+
+  if (!directorFilm) return;
+
+
+  try {
+
+    /*
+      Use the existing project object if available.
+      The code also creates a compatible local
+      project record if the existing app uses
+      another structure.
+    */
+
+    let project =
+      JSON.parse(
+        localStorage.getItem(
+          "my_ai_filmmaker_v1"
+        ) || "{}"
+      );
+
+
+    project.story =
+      directorFilm.story;
+
+    project.title =
+      directorFilm.title;
+
+
+    project.characters =
+      directorFilm.characters.map(function(c) {
+
+        return {
+
+          name:c.name,
+
+          role:c.role,
+
+          age:c.age,
+
+          appearance:c.appearance,
+
+          personality:c.personality,
+
+          clothing:c.clothing
+
+        };
+
+      });
+
+
+    project.scenes =
+      directorFilm.scenes.map(function(s) {
+
+        return {
+
+          title:s.title,
+
+          purpose:s.purpose,
+
+          action:s.action,
+
+          shots:s.shots
+
+        };
+
+      });
+
+
+    project.director =
+      directorFilm;
+
+
+    localStorage.setItem(
+      "my_ai_filmmaker_v1",
+      JSON.stringify(project)
+    );
+
+
+    alert(
+      "🎬 Film plan sent to your My AI Filmmaker project."
+    );
+
+
+  } catch(error) {
+
+    console.error(error);
+
+    alert(
+      "The film was created, but your existing project format could not be updated automatically."
+    );
+
+  }
+
+}
+
+
+/* ==========================================
+   COPY FILM PLAN
+   ========================================== */
+
+function copyDirectorPlan() {
+
+  if (!directorFilm) return;
+
+
+  let text = "";
+
+  text +=
+    "MY AI FILMMAKER — AI DIRECTOR\n\n";
+
+
+  text +=
+    "TITLE: " +
+    directorFilm.title +
+    "\n\n";
+
+
+  text +=
+    "GENRE: " +
+    directorFilm.genre +
+    "\n\n";
+
+
+  text +=
+    "LOGLINE:\n" +
+    directorFilm.logline +
+    "\n\n";
+
+
+  text +=
+    "STORY:\n" +
+    directorFilm.story +
+    "\n\n";
+
+
+  text +=
+    "CHARACTERS:\n";
+
+
+  directorFilm.characters.forEach(function(c) {
+
+    text +=
+      "\n" +
+      c.name +
+      " — " +
+      c.role +
+      "\n" +
+      c.appearance +
+      "\n";
+
+  });
+
+
+  text +=
+    "\nSCENES:\n";
+
+
+  directorFilm.scenes.forEach(function(s) {
+
+    text +=
+      "\nScene " +
+      s.number +
+      " — " +
+      s.title +
+      "\n";
+
+    text +=
+      s.action +
+      "\n";
+
+    s.shots.forEach(function(shot,i) {
+
+      text +=
+        "Shot " +
+        (i+1) +
+        ": " +
+        shot +
+        "\n";
+
+    });
+
+  });
+
+
+  navigator.clipboard.writeText(text)
+    .then(function() {
+
+      alert(
+        "🎬 Film plan copied."
+      );
+
+    })
+    .catch(function() {
+
+      alert(
+        "Your browser did not allow automatic copying."
+      );
+
+    });
+
+}
+
+  </script>
