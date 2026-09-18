@@ -1123,10 +1123,1110 @@ function copyDirectorPlan() {
 
       alert(
         "Your browser did not allow automatic copying."
-      );
+      ); 
 
     });
 
 }
 
   </script>
+
+<!-- =========================================================
+     MY AI FILMMAKER — AI DIRECTOR V2
+     ONE-BLOCK UPGRADE
+     Paste this entire block immediately BEFORE </body>
+     ========================================================= -->
+
+<style>
+/* ================= AI DIRECTOR BUTTON ================= */
+
+.maf-director-nav {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:10px 15px;
+  border:0;
+  border-radius:10px;
+  cursor:pointer;
+  color:#fff;
+  background:linear-gradient(135deg,#6d45ff,#a855f7);
+  font-weight:700;
+}
+
+/* ================= DIRECTOR SCREEN ================= */
+
+#mafDirectorScreen {
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  overflow-y:auto;
+  display:none;
+  background:linear-gradient(135deg,#070711,#101025 55%,#080812);
+  color:#fff;
+  font-family:inherit;
+}
+
+.maf-director-wrap {
+  width:min(1100px,calc(100% - 28px));
+  margin:auto;
+  padding:18px 0 60px;
+}
+
+.maf-director-top {
+  padding:10px 0 28px;
+}
+
+.maf-director-back {
+  border:0;
+  border-radius:10px;
+  padding:10px 15px;
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  cursor:pointer;
+  margin-bottom:24px;
+}
+
+.maf-director-label {
+  font-size:11px;
+  letter-spacing:3px;
+  opacity:.55;
+  margin-bottom:6px;
+}
+
+.maf-director-title {
+  font-size:34px;
+  margin:0 0 8px;
+}
+
+.maf-director-subtitle {
+  margin:0;
+  opacity:.7;
+  line-height:1.6;
+}
+
+/* ================= CARDS ================= */
+
+.maf-director-card {
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:18px;
+  padding:22px;
+  margin-bottom:18px;
+  box-shadow:0 12px 40px rgba(0,0,0,.22);
+}
+
+.maf-director-card h2 {
+  margin-top:0;
+}
+
+/* ================= INPUTS ================= */
+
+.maf-director-textarea,
+.maf-director-input,
+.maf-director-select {
+  width:100%;
+  box-sizing:border-box;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:12px;
+  background:rgba(0,0,0,.28);
+  color:#fff;
+  padding:14px;
+  font:inherit;
+  outline:none;
+}
+
+.maf-director-textarea {
+  min-height:170px;
+  resize:vertical;
+  line-height:1.6;
+}
+
+.maf-director-input {
+  margin-bottom:15px;
+}
+
+.maf-director-select {
+  margin-top:7px;
+}
+
+.maf-director-options {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  margin:17px 0;
+}
+
+.maf-director-options label {
+  display:block;
+  font-size:12px;
+  opacity:.65;
+}
+
+/* ================= BUTTONS ================= */
+
+.maf-director-build {
+  width:100%;
+  border:0;
+  border-radius:13px;
+  padding:17px;
+  background:linear-gradient(90deg,#6d45ff,#a855f7);
+  color:#fff;
+  font-size:16px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.maf-director-actions {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.maf-director-actions button {
+  border:0;
+  border-radius:10px;
+  padding:13px 17px;
+  background:rgba(255,255,255,.10);
+  color:#fff;
+  cursor:pointer;
+}
+
+/* ================= RESULT SECTIONS ================= */
+
+.maf-director-section-title {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:18px;
+}
+
+.maf-director-section-number {
+  font-size:11px;
+  opacity:.45;
+}
+
+.maf-director-section-title h2 {
+  margin:0;
+}
+
+.maf-director-item {
+  background:rgba(0,0,0,.20);
+  border-radius:13px;
+  padding:16px;
+  margin:10px 0;
+  line-height:1.6;
+}
+
+.maf-director-item h3 {
+  margin-top:0;
+}
+
+.maf-director-scene {
+  background:rgba(0,0,0,.20);
+  border-radius:14px;
+  padding:18px;
+  margin:14px 0;
+}
+
+.maf-director-scene h3 {
+  margin-top:0;
+}
+
+.maf-director-shot {
+  border-top:1px solid rgba(255,255,255,.08);
+  padding:10px 0;
+  line-height:1.5;
+}
+
+.maf-director-prompt {
+  background:#050509;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:11px;
+  padding:15px;
+  margin:10px 0 18px;
+  white-space:pre-wrap;
+  line-height:1.6;
+  font-size:13px;
+}
+
+.maf-director-note {
+  opacity:.65;
+  font-size:13px;
+  line-height:1.6;
+}
+
+/* ================= MOBILE ================= */
+
+@media(max-width:700px) {
+
+  .maf-director-wrap {
+    width:min(100% - 20px,1100px);
+  }
+
+  .maf-director-title {
+    font-size:28px;
+  }
+
+  .maf-director-options {
+    grid-template-columns:1fr;
+  }
+
+}
+</style>
+
+
+<!-- =========================================================
+     AI DIRECTOR FULL INTERFACE
+     ========================================================= -->
+
+<div id="mafDirectorScreen">
+
+  <div class="maf-director-wrap">
+
+    <div class="maf-director-top">
+
+      <button
+        class="maf-director-back"
+        onclick="MAFDirector.close()">
+        ← Back to My AI Filmmaker
+      </button>
+
+      <div class="maf-director-label">
+        MY AI FILMMAKER
+      </div>
+
+      <h1 class="maf-director-title">
+        🎬 AI Director
+      </h1>
+
+      <p class="maf-director-subtitle">
+        Turn your movie idea into a complete filmmaking blueprint.
+      </p>
+
+    </div>
+
+
+    <!-- ================= IDEA ================= -->
+
+    <div class="maf-director-card">
+
+      <h2>🎞️ Start Your Film</h2>
+
+      <p class="maf-director-note">
+        Give the Director a simple idea. You do not need to know
+        screenplay or filmmaking terminology.
+      </p>
+
+      <textarea
+        id="mafDirectorIdea"
+        class="maf-director-textarea"
+        placeholder="Example:
+
+A teenage boy discovers a mysterious room beneath his school. Inside the room is a machine that can show him the future..."
+      ></textarea>
+
+
+      <div class="maf-director-options">
+
+        <div>
+
+          <label>Genre</label>
+
+          <select
+            id="mafDirectorGenre"
+            class="maf-director-select">
+
+            <option>Drama</option>
+            <option>Action</option>
+            <option>Adventure</option>
+            <option>Science Fiction</option>
+            <option>Fantasy</option>
+            <option>Mystery</option>
+            <option>Thriller</option>
+            <option>Comedy</option>
+            <option>Horror</option>
+            <option>Documentary</option>
+
+          </select>
+
+        </div>
+
+
+        <div>
+
+          <label>Film Style</label>
+
+          <select
+            id="mafDirectorStyle"
+            class="maf-director-select">
+
+            <option>Cinematic realism</option>
+            <option>Photorealistic</option>
+            <option>Hollywood cinematic</option>
+            <option>Stylized cinematic</option>
+            <option>Dark cinematic</option>
+            <option>Warm emotional</option>
+            <option>Epic blockbuster</option>
+
+          </select>
+
+        </div>
+
+
+        <div>
+
+          <label>Number of Scenes</label>
+
+          <select
+            id="mafDirectorSceneCount"
+            class="maf-director-select">
+
+            <option value="5">5 Scenes</option>
+            <option value="7">7 Scenes</option>
+            <option value="10">10 Scenes</option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      <button
+        class="maf-director-build"
+        onclick="MAFDirector.build()">
+
+        🎬 BUILD MY FILM
+
+      </button>
+
+    </div>
+
+
+    <!-- ================= RESULTS ================= -->
+
+    <div
+      id="mafDirectorResults"
+      style="display:none;">
+
+      <!-- FILM CONCEPT -->
+
+      <div class="maf-director-card">
+
+        <div class="maf-director-section-title">
+
+          <span class="maf-director-section-number">
+            01
+          </span>
+
+          <h2>Film Concept</h2>
+
+        </div>
+
+
+        <label>Title</label>
+
+        <input
+          id="mafDirectorTitle"
+          class="maf-director-input">
+
+
+        <label>Logline</label>
+
+        <textarea
+          id="mafDirectorLogline"
+          class="maf-director-textarea"
+          style="min-height:100px;margin:7px 0 16px;">
+        </textarea>
+
+
+        <label>Story</label>
+
+        <textarea
+          id="mafDirectorStory"
+          class="maf-director-textarea"
+          style="min-height:150px;margin-top:7px;">
+        </textarea>
+
+      </div>
+
+
+      <!-- CHARACTERS -->
+
+      <div class="maf-director-card">
+
+        <div class="maf-director-section-title">
+
+          <span class="maf-director-section-number">
+            02
+          </span>
+
+          <h2>Characters</h2>
+
+        </div>
+
+        <div id="mafDirectorCharacters"></div>
+
+      </div>
+
+
+      <!-- STRUCTURE -->
+
+      <div class="maf-director-card">
+
+        <div class="maf-director-section-title">
+
+          <span class="maf-director-section-number">
+            03
+          </span>
+
+          <h2>Story Structure</h2>
+
+        </div>
+
+        <div id="mafDirectorStructure"></div>
+
+      </div>
+
+
+      <!-- SCENES -->
+
+      <div class="maf-director-card">
+
+        <div class="maf-director-section-title">
+
+          <span class="maf-director-section-number">
+            04
+          </span>
+
+          <h2>Scene Breakdown</h2>
+
+        </div>
+
+        <div id="mafDirectorScenes"></div>
+
+      </div>
+
+
+      <!-- VISUAL DIRECTION -->
+
+      <div class="maf-director-card">
+
+        <div class="maf-director-section-title">
+
+          <span class="maf-director-section-number">
+            05
+          </span>
+
+          <h2>Visual Direction</h2>
+
+        </div>
+
+        <div id="mafDirectorVisual"></div>
+
+      </div>
+
+
+      <!-- PROMPTS -->
+
+      <div class="maf-director-card">
+
+        <div class="maf-director-section-title">
+
+          <span class="maf-director-section-number">
+            06
+          </span>
+
+          <h2>AI Generation Prompts</h2>
+
+        </div>
+
+        <div id="mafDirectorPrompts"></div>
+
+      </div>
+
+
+      <!-- ACTIONS -->
+
+      <div class="maf-director-actions">
+
+        <button
+          onclick="MAFDirector.sendToProject()">
+          📂 Send to My Project
+        </button>
+
+        <button
+          onclick="MAFDirector.copyPlan()">
+          📋 Copy Film Plan
+        </button>
+
+        <button
+          onclick="MAFDirector.build()">
+          🔄 Rebuild Film
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   MY AI FILMMAKER — AI DIRECTOR ENGINE
+   ========================================================= */
+
+(function() {
+
+  "use strict";
+
+
+  let film = null;
+
+
+  /* ================= OPEN ================= */
+
+  function open() {
+
+    const screen =
+      document.getElementById(
+        "mafDirectorScreen"
+      );
+
+    if (!screen) return;
+
+
+    screen.style.display = "block";
+
+    window.scrollTo(0,0);
+
+  }
+
+
+  /* ================= CLOSE ================= */
+
+  function close() {
+
+    const screen =
+      document.getElementById(
+        "mafDirectorScreen"
+      );
+
+    if (!screen) return;
+
+
+    screen.style.display = "none";
+
+    window.scrollTo(0,0);
+
+  }
+
+
+  /* ================= BUILD ================= */
+
+  function build() {
+
+    const idea =
+      document.getElementById(
+        "mafDirectorIdea"
+      ).value.trim();
+
+
+    if (!idea) {
+
+      alert(
+        "🎬 Give the Director your film idea first."
+      );
+
+      return;
+
+    }
+
+
+    const genre =
+      document.getElementById(
+        "mafDirectorGenre"
+      ).value;
+
+
+    const style =
+      document.getElementById(
+        "mafDirectorStyle"
+      ).value;
+
+
+    const sceneCount =
+      Number(
+        document.getElementById(
+          "mafDirectorSceneCount"
+        ).value
+      );
+
+
+    const protagonist =
+      makeProtagonist();
+
+
+    const supporting =
+      makeSupporting();
+
+
+    film = {
+
+      idea:idea,
+
+      title:makeTitle(idea),
+
+      genre:genre,
+
+      style:style,
+
+      logline:
+        makeLogline(
+          idea,
+          protagonist
+        ),
+
+      story:
+        makeStory(
+          idea,
+          protagonist
+        ),
+
+      characters:[
+        protagonist,
+        supporting
+      ],
+
+      structure:
+        makeStructure(),
+
+      scenes:
+        makeScenes(
+          protagonist,
+          supporting,
+          sceneCount
+        ),
+
+      visual:
+        makeVisual(
+          genre,
+          style
+        )
+
+    };
+
+
+    render();
+
+
+    document.getElementById(
+      "mafDirectorResults"
+    ).style.display = "block";
+
+
+    window.scrollTo({
+      top:0,
+      behavior:"smooth"
+    });
+
+  }
+
+
+  /* ================= TITLE ================= */
+
+  function makeTitle(idea) {
+
+    const words =
+      idea
+        .replace(/[^\w\s]/g,"")
+        .split(/\s+/)
+        .filter(Boolean);
+
+
+    if (words.length >= 2) {
+
+      const first =
+        words[0]
+          .charAt(0)
+          .toUpperCase() +
+        words[0].slice(1);
+
+
+      return first +
+        " — The Story Begins";
+
+    }
+
+
+    return "The Beginning";
+
+  }
+
+
+  /* ================= LOGLINE ================= */
+
+  function makeLogline(
+    idea,
+    protagonist
+  ) {
+
+    return (
+      protagonist.name +
+      " is drawn into a world-changing situation after " +
+      idea.toLowerCase() +
+      ". To survive the consequences, " +
+      protagonist.name +
+      " must discover the truth and make a choice that will change everything."
+    );
+
+  }
+
+
+  /* ================= STORY ================= */
+
+  function makeStory(
+    idea,
+    protagonist
+  ) {
+
+    return (
+      "ACT I — THE BEGINNING\n\n" +
+
+      "We meet " +
+      protagonist.name +
+      " in the ordinary world. " +
+      "The story begins when " +
+      idea +
+      " This event introduces the central mystery and gives the protagonist a reason to act.\n\n" +
+
+      "ACT II — THE JOURNEY\n\n" +
+
+      protagonist.name +
+      " begins investigating the situation. " +
+      "The deeper the investigation goes, the more complicated the problem becomes. " +
+      "New information creates obstacles and forces the protagonist to question what they believed at the beginning.\n\n" +
+
+      "ACT III — THE CLIMAX\n\n" +
+
+      "The central conflict reaches its highest point. " +
+      protagonist.name +
+      " must finally make a difficult decision.\n\n" +
+
+      "RESOLUTION\n\n" +
+
+      "The consequences of that decision unfold and the story reaches an emotional conclusion."
+    );
+
+  }
+
+
+  /* ================= PROTAGONIST ================= */
+
+  function makeProtagonist() {
+
+    return {
+
+      name:"Kofi",
+
+      role:"Protagonist",
+
+      age:"Teenager",
+
+      appearance:
+        "A Ghanaian teenage boy with natural realistic features, expressive eyes and believable proportions.",
+
+      personality:
+        "Curious, intelligent, determined and emotionally resilient.",
+
+      clothing:
+        "Contemporary clothing appropriate to the story environment.",
+
+      purpose:
+        "The central character who drives the story forward."
+
+    };
+
+  }
+
+
+  /* ================= SUPPORTING ================= */
+
+  function makeSupporting() {
+
+    return {
+
+      name:"Ama",
+
+      role:"Supporting Character",
+
+      age:"Teenager",
+
+      appearance:
+        "A Ghanaian teenage girl with natural realistic features and an expressive face.",
+
+      personality:
+        "Observant, courageous, intelligent and loyal.",
+
+      clothing:
+        "Contemporary clothing appropriate to the story environment.",
+
+      purpose:
+        "Supports the protagonist while providing another perspective."
+
+    };
+
+  }
+
+
+  /* ================= STRUCTURE ================= */
+
+  function makeStructure() {
+
+    return {
+
+      beginning:
+        "Introduce the protagonist, establish the world and reveal the event that starts the story.",
+
+      middle:
+        "The protagonist investigates the central problem, encounters obstacles and discovers deeper information.",
+
+      climax:
+        "The central conflict reaches its highest tension and the protagonist must make a major decision.",
+
+      ending:
+        "The consequences of the decision are revealed and the story reaches a satisfying emotional conclusion."
+
+    };
+
+  }
+
+
+  /* ================= SCENES ================= */
+
+  function makeScenes(
+    protagonist,
+    supporting,
+    count
+  ) {
+
+    const templates = [
+
+      {
+        title:"The Ordinary World",
+
+        purpose:
+          "Introduce the protagonist and establish the world.",
+
+        action:
+          protagonist.name +
+          " experiences an ordinary moment before something unusual interrupts the day.",
+
+        shots:[
+          "Wide establishing shot of the environment.",
+          "Medium shot following the protagonist.",
+          "Close-up showing the protagonist's reaction."
+        ]
+
+      },
+
+
+      {
+        title:"The Discovery",
+
+        purpose:
+          "Reveal the central mystery or problem.",
+
+        action:
+          protagonist.name +
+          " discovers something that changes the direction of the story.",
+
+        shots:[
+          "Slow cinematic push toward the discovery.",
+          "Close-up of the important object or location.",
+          "Reaction close-up."
+        ]
+
+      },
+
+
+      {
+        title:"The Investigation",
+
+        purpose:
+          "Move the story deeper into the mystery.",
+
+        action:
+          protagonist.name +
+          " and " +
+          supporting.name +
+          " investigate the situation and uncover a deeper problem.",
+
+        shots:[
+          "Tracking shot following both characters.",
+          "Over-the-shoulder investigation shot.",
+          "Close-up of an important clue."
+        ]
+
+      },
+
+
+      {
+        title:"The Rising Conflict",
+
+        purpose:
+          "Increase tension and reveal consequences.",
+
+        action:
+          protagonist.name +
+          " realizes that the situation is more serious than expected.",
+
+        shots:[
+          "Wide shot establishing the danger.",
+          "Handheld-style movement during the tension.",
+          "Close-up on the protagonist's emotional reaction."
+        ]
+
+      },
+
+
+      {
+        title:"The Confrontation",
+
+        purpose:
+          "Bring the central conflict toward its climax.",
+
+        action:
+          protagonist.name +
+          " is forced to confront the central problem.",
+
+        shots:[
+          "Wide cinematic confrontation shot.",
+          "Alternating close-ups.",
+          "Slow push toward the protagonist."
+        ]
+
+      },
+
+
+      {
+        title:"The Decision",
+
+        purpose:
+          "Force the protagonist to make a major choice.",
+
+        action:
+          protagonist.name +
+          " must decide what they are willing to sacrifice to solve the problem.",
+
+        shots:[
+          "Quiet emotional close-up.",
+          "Over-the-shoulder decision shot.",
+          "Wide shot showing the environment."
+        ]
+
+      },
+
+
+      {
+        title:"The Consequences",
+
+        purpose:
+          "Show the effect of the protagonist's decision.",
+
+        action:
+          protagonist.name +
+          " faces the consequences of the choice that was made.",
+
+        shots:[
+          "Wide aftermath shot.",
+          "Medium character shot.",
+          "Detail close-up."
+        ]
+
+      },
+
+
+      {
+        title:"The Final Moment",
+
+        purpose:
+          "Give the audience the final emotional image.",
+
+        action:
+          protagonist.name +
+          " reaches the end of the journey and understands what the experience has changed.",
+
+        shots:[
+          "Slow cinematic tracking shot.",
+          "Emotional close-up.",
+          "Final wide establishing shot."
+        ]
+
+      }
+
+    ];
+
+
+    const scenes = [];
+
+
+    for (
+      let i = 0;
+      i < count;
+      i++
+    ) {
+
+      const t =
+        templates[
+          i % templates.length
+        ];
+
+
+      scenes.push({
+
+        number:i + 1,
+
+        title:t.title,
+
+        purpose:t.purpose,
+
+        action:t.action,
+
+        shots:t.shots
+
+      });
+
+    }
+
+
+    return scenes;
+
+  }
+
+
+  /* ================= VISUAL ================= */
+
+  function makeVisual(
+    genre,
+    style
+  ) {
+
+    return {
+
+      style:style,
+
+      genre:genre,
+
+      camera:
+        "Professional cinematic framing, purposeful camera movement, natural depth of field and carefully composed shots.",
+
+      lighting:
+        "Natural cinematic lighting with believable highlights, shadows and realistic skin tones
+
+
