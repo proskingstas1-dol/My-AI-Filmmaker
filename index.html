@@ -23,66 +23,103 @@ async function copyText(id){try{await navigator.clipboard.writeText($(id).value)
 function exportProject(){let blob=new Blob([JSON.stringify(p,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(p.title||'my-ai-film-project').replace(/[^a-z0-9_-]/gi,'_')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Backup exported')}function importProject(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{p=JSON.parse(r.result);p.title=p.title||'';p.idea=p.idea||'';p.story=p.story||{};p.characters=Array.isArray(p.characters)?p.characters:[];p.scenes=Array.isArray(p.scenes)?p.scenes:[];p.assets=Array.isArray(p.assets)?p.assets:[];save();load();toast('Project imported')}catch{toast('Invalid project file')}e.target.value=''};r.readAsText(f)}function resetProject(){if(confirm('Clear this project?')){localStorage.removeItem(K);p={title:'',idea:'',story:{},characters:[],scenes:[],assets:[]};load();toast('Project cleared')}}
 function load(){p.characters=Array.isArray(p.characters)?p.characters:[];p.scenes=Array.isArray(p.scenes)?p.scenes:[];p.assets=Array.isArray(p.assets)?p.assets:[];$('title').value=p.title||'';$('idea').value=p.idea||'';let s=p.story||{};['logline','beginning','middle','climax','ending','screenplay'].forEach(k=>$(k).value=s[k]||'');renderCharacters();renderScenes();renderAssets();refreshScenes();$('directorIdea').value=p.idea||''}function demo(){p={title:'The Last Desk',idea:'A student and his friends try to solve the shortage of desks at their school.',story:{logline:'Students turn a school problem into a community solution.',beginning:'A crowded classroom begins a difficult school day.',middle:'The students investigate the problem and rally support.',climax:'The community comes together to provide desks.',ending:'The classroom changes and students learn that action can create change.',screenplay:'SCENE 1 — CLASSROOM\nNarrator: ...'},characters:[{name:'Kofi',role:'Student',appearance:'Ghanaian teenage boy, neat school uniform, short natural hair',personality:'Curious, determined, respectful',voice:'Natural youthful voice'}],scenes:[{name:'Scene 1 — Crowded classroom',location:'Ghanaian school classroom',action:'Students sit closely together while the teacher begins class.',camera:'Slow wide establishing shot, then medium close-up',light:'Soft morning daylight, realistic and hopeful',dialogue:'Teacher: Good morning, class.'}],assets:[]};save();load();toast('Example loaded')}
 function useProjectIdea(){$('directorIdea').value=$('idea').value||'';if(!$('directorIdea').value)toast('Add a project idea first');else toast('Project idea loaded')}
-function makeScene(i,total,char,tone,style){
+function makeScene(i,total,char,tone,style,idea,genre){
   const names=[
-    'The Beginning',
-    'The Problem',
-    'The Journey',
-    'The Turning Point',
-    'The Resolution',
-    'The Consequence',
-    'The Final Choice',
-    'The New Beginning',
-    'The Revelation',
-    'The Future'
+    'Opening Image','Inciting Problem','Rising Action',
+    'Turning Point','Climax','Aftermath',
+    'Final Choice','New Beginning','Revelation','Closing Image'
   ];
 
   const acts=[
-    `${char} is introduced and the audience sees the world before the main conflict changes it.`,
-    `The central problem becomes impossible to ignore, forcing ${char} to respond.`,
-    `${char} takes action and encounters an obstacle that raises the stakes.`,
-    `Pressure reaches its highest point and ${char} must make an important choice.`,
-    `The main conflict reaches a clear resolution and its emotional meaning becomes visible.`,
-    `The consequences of earlier events become clear to ${char} and the people around them.`,
-    `${char} faces one final decision that demonstrates what they have learned.`,
-    `The world begins to settle into its new state after the central conflict.`,
-    `A final realization gives the story deeper meaning.`,
-    `The film closes on a memorable image reflecting its theme.`
+    `${char} is introduced while the film's world and key situation are established. The visuals should directly reflect: ${idea}.`,
+    `The central problem connected to ${idea} becomes clear, forcing ${char} to react.`,
+    `${char} pursues a solution. A meaningful obstacle increases the stakes and reveals character.`,
+    `A major discovery or setback changes what ${char} believes and forces a difficult decision.`,
+    `The central conflict reaches its highest pressure. ${char} acts and the choice has visible consequences.`,
+    `The immediate consequences unfold and the characters process what has changed.`,
+    `${char} makes a final choice that resolves the central question raised by the story.`,
+    `The world settles into a new state, showing the practical and emotional result of the journey.`,
+    `A final realization connects the events back to the film's deeper theme.`,
+    `The film ends on a memorable visual moment that echoes the opening and leaves the audience with the story's message.`
+  ];
+
+  const locations=[
+    'Primary setting established by the filmmaker',
+    'The location where the central problem is visible',
+    'A connected location where the protagonist pursues the goal',
+    'A visually significant location suited to the turning point',
+    'The strongest location for the central confrontation',
+    'A quieter location showing consequences',
+    'A location where the final decision can be observed',
+    'The changed version of an earlier location',
+    'A meaningful location tied to the story theme',
+    'A final location or image that echoes the opening'
   ];
 
   const cams=[
-    'Wide establishing shot, then natural medium shot',
-    'Medium shots and close-ups revealing reactions',
-    'Tracking shot with purposeful movement',
-    'Controlled close-ups and a wider shot for scale',
-    'Wide-to-medium transition with a calm final close-up'
+    'Wide establishing shot → medium character shot',
+    'Medium coverage → reaction close-ups',
+    'Smooth tracking shot → purposeful close-up',
+    'Alternating wide and close shots to build tension',
+    'Controlled close-ups → wide shot for scale',
+    'Slow medium shots with restrained movement',
+    'Steady close-up → wider reveal',
+    'Gentle tracking shot → calm final close-up',
+    'Slow push-in toward the character',
+    'Memorable wide closing shot'
   ];
 
   const lights=[
-    'Soft natural cinematic lighting',
-    'Realistic slightly dramatic lighting',
-    'Natural environmental lighting with cinematic contrast',
-    'Controlled cinematic lighting emphasizing emotion',
-    'Warm natural light suggesting resolution'
+    'Soft natural cinematic light',
+    'Realistic directional light with moderate contrast',
+    'Natural environmental light with cinematic depth',
+    'Controlled contrast emphasizing emotion',
+    'Dramatic but physically believable cinematic lighting',
+    'Softer light suggesting reflection',
+    'Focused natural light emphasizing the decision',
+    'Warm natural light suggesting renewal',
+    'Quiet atmospheric light',
+    'Natural closing light that visually echoes Scene 1'
   ];
 
-  const dialogues=[
-    `${char}: Something has to change.`,
+  const dialogue=[
+    `${char}: I know something has to change.`,
     `${char}: We cannot ignore this anymore.`,
     `${char}: There has to be another way.`,
+    `${char}: If we do this, everything changes.`,
     `${char}: This is our moment to decide.`,
-    `${char}: We actually did it.`
+    `${char}: Now we have to live with what happened.`,
+    `${char}: I know what I have to do.`,
+    `${char}: We made it through.`,
+    `${char}: Now I understand.`,
+    'Natural ambient sound; no unnecessary dialogue.'
   ];
 
+  const shots=[
+    'Establish setting; introduce protagonist; show the story-relevant visual detail.',
+    'Show the problem; cut to protagonist reaction; reveal the immediate stakes.',
+    'Follow protagonist; show the obstacle; capture a meaningful reaction.',
+    'Reveal new information; close on protagonist; widen to show consequence.',
+    'Build visual tension; show decisive action; hold on the consequence.',
+    'Observe reactions; include environmental detail; slow the visual rhythm.',
+    'Frame the decision clearly; capture the action; reveal its result.',
+    'Return to a familiar visual idea with changed circumstances.',
+    'Use a visual symbol or detail that reinforces the theme.',
+    'Echo an image, location, or composition from the opening.'
+  ];
+
+  const n=(i-1)%names.length;
+
   return {
-    name:`Scene ${i} — ${names[(i-1)%names.length]}`,
-    location:'A realistic location connected to the story',
-    action:acts[(i-1)%acts.length],
-    camera:cams[(i-1)%cams.length],
-    light:`${lights[(i-1)%lights.length]}. Tone: ${tone}. Visual style: ${style}.`,
-    dialogue:dialogues[(i-1)%dialogues.length]
+    name:`Scene ${i} — ${names[n]}`,
+    location:locations[n],
+    action:acts[n],
+    camera:cams[n],
+    light:`${lights[n]}. Tone: ${tone}. Visual style: ${style}.`,
+    dialogue:dialogue[n],
+    shots:shots[n]
   };
-}
+  }
 
 function runDirector(){
   const idea=$('directorIdea').value.trim();
