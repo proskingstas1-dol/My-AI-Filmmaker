@@ -509,5 +509,597 @@ if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})
 }
 </script>
+
+ <!-- V4 SHOT DIRECTOR START -->
+<style>
+#shotDirectorPanel{display:none}
+#shotDirectorPanel.active{display:block}
+.shot-card{
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
+  margin:10px 0;
+  background:#10182c
+}
+.shot-number{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:999px;
+  background:var(--accent);
+  color:white;
+  font-size:11px;
+  font-weight:700;
+  margin-bottom:8px
+}
+.shot-card textarea{min-height:80px}
+.shot-prompt{
+  min-height:180px!important
+}
+.shot-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:10px
+}
+.shot-actions button{flex:1}
+</style>
+
+<script>
+(function(){
+
+function v4Esc(x){
+  return String(x??'').replace(/[&<>\"']/g,m=>({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '\"':'&quot;',
+    "'":'&#39;'
+  }[m]))
+}
+
+/* Add Shot Director navigation button */
+const nav=document.getElementById('nav');
+
+if(nav && !document.getElementById('shotDirectorNav')){
+  const b=document.createElement('button');
+  b.id='shotDirectorNav';
+  b.dataset.tab='shotDirectorPanel';
+  b.textContent='🎥 Shot Director';
+  b.onclick=function(){v4OpenShotDirector()};
+  nav.appendChild(b);
+}
+
+/* Add Shot Director panel */
+if(!document.getElementById('shotDirectorPanel')){
+
+  const panel=document.createElement('section');
+
+  panel.id='shotDirectorPanel';
+  panel.className='panel';
+
+  panel.innerHTML=`
+
+  <div class="director-hero">
+    <h2>🎥 Shot Director — V4</h2>
+    <div class="small">
+      Break each scene into cinematic shots while preserving your V3 Character Bible and continuity.
+    </div>
+  </div>
+
+  <div class="card">
+
+    <h2>🎬 Build your shots</h2>
+
+    <label>Select scene</label>
+    <select id="v4SceneSelect"></select>
+
+    <div class="row" style="margin-top:12px">
+      <button class="primary" onclick="v4GenerateShots()">
+        🎥 GENERATE SHOTS
+      </button>
+
+      <button class="secondary" onclick="v4ClearShots()">
+        Clear
+      </button>
+    </div>
+
+    <div class="notice" style="margin-top:12px">
+      V4 uses your existing scene information and Character Bible to create a connected shot plan.
+    </div>
+
+  </div>
+
+  <div id="v4SceneInfo" class="card" style="display:none">
+    <h2>📋 Scene information</h2>
+    <div id="v4SceneSummary"></div>
+  </div>
+
+  <div id="v4ShotOutput" class="card" style="display:none">
+
+    <h2>🎞️ Shot list</h2>
+
+    <div id="v4Shots"></div>
+
+    <div class="row" style="margin-top:14px">
+
+      <button class="primary" onclick="v4SaveShots()">
+        💾 Save Shots
+      </button>
+
+      <button class="secondary" onclick="v4CopyAllShots()">
+        📋 Copy All
+      </button>
+
+    </div>
+
+  </div>
+
+  `;
+
+  document.querySelector('main').appendChild(panel);
+}
+
+
+/* Open Shot Director */
+window.v4OpenShotDirector=function(){
+
+  document.querySelectorAll('nav button')
+    .forEach(b=>b.classList.toggle(
+      'active',
+      b.dataset.tab==='shotDirectorPanel'
+    ));
+
+  document.querySelectorAll('.panel')
+    .forEach(x=>x.classList.remove('active'));
+
+  document.getElementById('shotDirectorPanel')
+    .classList.add('active');
+
+  v4RefreshScenes();
+
+};
+
+
+/* Load scenes into selector */
+window.v4RefreshScenes=function(){
+
+  const select=document.getElementById('v4SceneSelect');
+
+  if(!select)return;
+
+  const scenes=Array.isArray(p.scenes)?p.scenes:[];
+
+  if(!scenes.length){
+
+    select.innerHTML='<option value="">No scenes available</option>';
+
+    return;
+  }
+
+  select.innerHTML=scenes.map((s,i)=>
+    `<option value="${i}">
+      ${i+1}. ${v4Esc(s.name||'Untitled scene')}
+    </option>`
+  ).join('');
+
+};
+
+
+/* Get selected scene */
+function v4GetScene(){
+
+  const index=parseInt(
+    document.getElementById('v4SceneSelect').value,
+    10
+  );
+
+  if(Number.isNaN(index))return null;
+
+  return {
+    index:index,
+    scene:p.scenes[index]
+  };
+
+}
+
+
+/* Character Bible */
+function v4Bible(){
+
+  if(typeof characterBibleText==='function'){
+    return characterBibleText();
+  }
+
+  if(!p.characters.length){
+    return 'No Character Bible entries.';
+  }
+
+  return p.characters.map((c,i)=>`
+
+CHARACTER ${i+1}: ${c.name||'Unnamed'}
+Role: ${c.role||'Not specified'}
+Appearance: ${c.appearance||'Not specified'}
+Personality: ${c.personality||'Not specified'}
+Voice: ${c.voice||'Not specified'}
+Visual anchors: ${c.anchors||'Not specified'}
+Continuity: ${c.continuity||'Keep character identity and appearance consistent.'}
+
+`).join('\n');
+
+}
+
+
+/* Generate shots */
+window.v4GenerateShots=function(){
+
+  const selected=v4GetScene();
+
+  if(!selected){
+    toast('Select a scene first');
+    return;
+  }
+
+  const s=selected.scene;
+
+  const bible=v4Bible();
+
+  const character=
+    p.characters.length
+    ? p.characters.map(c=>c.name).join(', ')
+    : 'Characters from the scene';
+
+  const baseAction=s.action||'Perform the scene action naturally.';
+
+  const location=s.location||'Scene location';
+
+  const light=s.light||'Natural cinematic lighting';
+
+  const dialogue=s.dialogue||'No dialogue specified.';
+
+  const camera=s.camera||'Cinematic camera direction';
+
+  const shots=[
+
+    {
+      type:'Establishing Wide Shot',
+      angle:'Eye level',
+      movement:'Slow controlled push-in',
+      framing:'Wide frame showing the environment and subject',
+      action:`Establish ${location} before the main action begins.`,
+      lighting:light,
+      duration:'4–6 seconds'
+    },
+
+    {
+      type:'Medium Shot',
+      angle:'Eye level',
+      movement:'Subtle tracking movement',
+      framing:'Medium framing focused on the main subject',
+      action:`Show ${character} beginning the main action: ${baseAction}`,
+      lighting:light,
+      duration:'4–6 seconds'
+    },
+
+    {
+      type:'Over-the-Shoulder Shot',
+      angle:'Slightly above shoulder level',
+      movement:'Slow natural camera adjustment',
+      framing:'Over-the-shoulder composition connecting character and environment',
+      action:`Show what the character is seeing or reacting to during the scene.`,
+      lighting:light,
+      duration:'3–5 seconds'
+    },
+
+    {
+      type:'Close-Up',
+      angle:'Eye level',
+      movement:'Locked-off or extremely subtle push-in',
+      framing:'Close framing on the character's face',
+      action:`Capture the character's emotion and reaction to the situation.`,
+      lighting:light,
+      duration:'3–4 seconds'
+    },
+
+    {
+      type:'Action Shot',
+      angle:'Natural cinematic angle',
+      movement:'Controlled tracking or pan',
+      framing:'Medium-wide framing that clearly shows the action',
+      action:baseAction,
+      lighting:light,
+      duration:'4–6 seconds'
+    },
+
+    {
+      type:'Detail Shot',
+      angle:'Close detail angle',
+      movement:'Minimal movement',
+      framing:'Close-up of an important object, hand movement or environmental detail',
+      action:`Show a meaningful visual detail connected to the scene.`,
+      lighting:light,
+      duration:'2–4 seconds'
+    },
+
+    {
+      type:'Reaction / Closing Shot',
+      angle:'Eye level',
+      movement:'Slow pull-back',
+      framing:'Medium or wide closing composition',
+      action:`End the scene with the character's reaction and a clear visual transition to what happens next.`,
+      lighting:light,
+      duration:'4–6 seconds'
+    }
+
+  ];
+
+  const enriched=shots.map((shot,i)=>{
+
+    const prompt=`
+
+SHOT ${i+1} — ${shot.type}
+
+SUBJECT:
+${character}
+
+LOCATION:
+${location}
+
+ACTION:
+${shot.action}
+
+CAMERA:
+${shot.type}, ${shot.angle}, ${shot.movement}, ${shot.framing}.
+
+LIGHTING:
+${shot.lighting}
+
+DIALOGUE / AUDIO:
+${dialogue}
+
+CHARACTER BIBLE:
+${bible}
+
+CONTINUITY:
+Keep the exact same character identity, facial appearance, hairstyle, clothing, accessories, age range, body language, personality and visual anchors established in the Character Bible. Do not redesign or replace the character between shots.
+
+VISUAL STYLE:
+Cinematic, photorealistic, believable human movement, realistic environment, coherent anatomy, natural lighting, consistent visual style and strong continuity.
+
+SHOT DURATION:
+${shot.duration}
+
+`;
+
+    return {
+      ...shot,
+      prompt:prompt.trim()
+    };
+
+  });
+
+  window.__v4Shots=enriched;
+
+  document.getElementById('v4SceneInfo').style.display='block';
+
+  document.getElementById('v4SceneSummary').innerHTML=`
+
+    <div class="result">
+
+      <strong>${v4Esc(s.name||'Untitled scene')}</strong>
+
+      <div class="small">
+        Location: ${v4Esc(location)}
+      </div>
+
+      <div class="small">
+        Action: ${v4Esc(baseAction)}
+      </div>
+
+      <div class="small">
+        Camera: ${v4Esc(camera)}
+      </div>
+
+    </div>
+
+  `;
+
+  v4RenderShots();
+
+  toast('V4 shot plan created');
+
+};
+
+
+/* Render shots */
+function v4RenderShots(){
+
+  const shots=window.__v4Shots||[];
+
+  const box=document.getElementById('v4Shots');
+
+  document.getElementById('v4ShotOutput').style.display='block';
+
+  box.innerHTML=shots.map((shot,i)=>`
+
+    <div class="shot-card">
+
+      <span class="shot-number">
+        SHOT ${i+1}
+      </span>
+
+      <h3>${v4Esc(shot.type)}</h3>
+
+      <label>Shot type</label>
+      <input
+        id="v4type${i}"
+        value="${v4Esc(shot.type)}"
+      >
+
+      <label>Camera angle</label>
+      <input
+        id="v4angle${i}"
+        value="${v4Esc(shot.angle)}"
+      >
+
+      <label>Camera movement</label>
+      <input
+        id="v4movement${i}"
+        value="${v4Esc(shot.movement)}"
+      >
+
+      <label>Framing</label>
+      <input
+        id="v4framing${i}"
+        value="${v4Esc(shot.framing)}"
+      >
+
+      <label>Action / performance</label>
+      <textarea id="v4action${i}">${v4Esc(shot.action)}</textarea>
+
+      <label>Lighting</label>
+      <textarea id="v4lighting${i}">${v4Esc(shot.lighting)}</textarea>
+
+      <label>Duration</label>
+      <input
+        id="v4duration${i}"
+        value="${v4Esc(shot.duration)}"
+      >
+
+      <label>Generation-ready shot prompt</label>
+      <textarea
+        id="v4prompt${i}"
+        class="shot-prompt"
+      >${v4Esc(shot.prompt)}</textarea>
+
+      <div class="shot-actions">
+
+        <button
+          class="secondary"
+          onclick="v4CopyShot(${i})"
+        >
+          📋 Copy Shot
+        </button>
+
+      </div>
+
+    </div>
+
+  `).join('');
+
+}
+
+
+/* Update generated data from edited fields */
+function v4CollectShots(){
+
+  const shots=window.__v4Shots||[];
+
+  return shots.map((shot,i)=>({
+
+    ...shot,
+
+    type:document.getElementById('v4type'+i).value,
+
+    angle:document.getElementById('v4angle'+i).value,
+
+    movement:document.getElementById('v4movement'+i).value,
+
+    framing:document.getElementById('v4framing'+i).value,
+
+    action:document.getElementById('v4action'+i).value,
+
+    lighting:document.getElementById('v4lighting'+i).value,
+
+    duration:document.getElementById('v4duration'+i).value,
+
+    prompt:document.getElementById('v4prompt'+i).value
+
+  }));
+
+}
+
+
+/* Save shots to selected scene */
+window.v4SaveShots=function(){
+
+  const selected=v4GetScene();
+
+  if(!selected){
+    toast('Select a scene first');
+    return;
+  }
+
+  const shots=v4CollectShots();
+
+  p.scenes[selected.index].shots=shots;
+
+  save();
+
+  window.__v4Shots=shots;
+
+  toast('Shots saved to scene');
+
+};
+
+
+/* Copy one shot */
+window.v4CopyShot=function(i){
+
+  const shots=v4CollectShots();
+
+  if(!shots[i])return;
+
+  navigator.clipboard.writeText(
+    shots[i].prompt
+  ).then(
+    ()=>toast('Shot prompt copied')
+  ).catch(
+    ()=>toast('Copy unavailable')
+  );
+
+};
+
+
+/* Copy all shots */
+window.v4CopyAllShots=function(){
+
+  const shots=v4CollectShots();
+
+  if(!shots.length){
+    toast('Generate shots first');
+    return;
+  }
+
+  const text=shots.map((s,i)=>
+    `SHOT ${i+1}\n\n${s.prompt}`
+  ).join('\n\n--------------------\n\n');
+
+  navigator.clipboard.writeText(text)
+    .then(()=>toast('All shots copied'))
+    .catch(()=>toast('Copy unavailable'));
+
+};
+
+
+/* Clear */
+window.v4ClearShots=function(){
+
+  window.__v4Shots=[];
+
+  document.getElementById('v4ShotOutput').style.display='none';
+
+  document.getElementById('v4SceneInfo').style.display='none';
+
+  document.getElementById('v4Shots').innerHTML='';
+
+};
+
+
+/* Refresh after existing page loads */
+v4RefreshScenes();
+
+})();
+</script>
+<!-- V4 SHOT DIRECTOR END -->
 </body>
 </html>
