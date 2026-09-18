@@ -162,7 +162,7 @@ function runDirector(){
   const scenes=[];
 
   for(let i=1;i<=total;i++){
-    scenes.push(makeScene(i,total,char,tone,style));
+    scenes.push(makeScene(i,total,char,tone,style,idea,genre));
   }
 
   p.title=title;
@@ -237,7 +237,8 @@ Location: ${s.location}
 Action: ${s.action}
 Camera: ${s.camera}
 Lighting: ${s.light}
-Dialogue/Audio: ${s.dialogue}`
+Dialogue/Audio: ${s.dialogue}
+Shot Plan: ${s.shots||'Maintain purposeful cinematic coverage.'}`
 ).join('\n\n')}
 
 CONTINUITY:
