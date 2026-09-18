@@ -23,4 +23,238 @@ async function copyText(id){try{await navigator.clipboard.writeText($(id).value)
 function exportProject(){let blob=new Blob([JSON.stringify(p,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(p.title||'my-ai-film-project').replace(/[^a-z0-9_-]/gi,'_')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Backup exported')}function importProject(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{p=JSON.parse(r.result);p.title=p.title||'';p.idea=p.idea||'';p.story=p.story||{};p.characters=Array.isArray(p.characters)?p.characters:[];p.scenes=Array.isArray(p.scenes)?p.scenes:[];p.assets=Array.isArray(p.assets)?p.assets:[];save();load();toast('Project imported')}catch{toast('Invalid project file')}e.target.value=''};r.readAsText(f)}function resetProject(){if(confirm('Clear this project?')){localStorage.removeItem(K);p={title:'',idea:'',story:{},characters:[],scenes:[],assets:[]};load();toast('Project cleared')}}
 function load(){p.characters=Array.isArray(p.characters)?p.characters:[];p.scenes=Array.isArray(p.scenes)?p.scenes:[];p.assets=Array.isArray(p.assets)?p.assets:[];$('title').value=p.title||'';$('idea').value=p.idea||'';let s=p.story||{};['logline','beginning','middle','climax','ending','screenplay'].forEach(k=>$(k).value=s[k]||'');renderCharacters();renderScenes();renderAssets();refreshScenes();$('directorIdea').value=p.idea||''}function demo(){p={title:'The Last Desk',idea:'A student and his friends try to solve the shortage of desks at their school.',story:{logline:'Students turn a school problem into a community solution.',beginning:'A crowded classroom begins a difficult school day.',middle:'The students investigate the problem and rally support.',climax:'The community comes together to provide desks.',ending:'The classroom changes and students learn that action can create change.',screenplay:'SCENE 1 — CLASSROOM\nNarrator: ...'},characters:[{name:'Kofi',role:'Student',appearance:'Ghanaian teenage boy, neat school uniform, short natural hair',personality:'Curious, determined, respectful',voice:'Natural youthful voice'}],scenes:[{name:'Scene 1 — Crowded classroom',location:'Ghanaian school classroom',action:'Students sit closely together while the teacher begins class.',camera:'Slow wide establishing shot, then medium close-up',light:'Soft morning daylight, realistic and hopeful',dialogue:'Teacher: Good morning, class.'}],assets:[]};save();load();toast('Example loaded')}
 function useProjectIdea(){$('directorIdea').value=$('idea').value||'';if(!$('directorIdea').value)toast('Add a project idea first');else toast('Project idea loaded')}
-function makeScene(i,total,char,tone,style){let names=['The Beginning','The Problem','The Journey','The Turning Point','The Resolution','The Consequence','The Final Choice','The New Beginning','The Revelation','The Future'];let acts=[`${char} is introduced and the audience sees the world before the main conflict changes it.`,`The central problem becomes impossible to ignore, forcing ${char} to respond.`,`${char} takes action and encounters an obstacle that raises the stakes.`,`Pressure reaches its highest point and ${char} must make an important choice.`,`The main conflict reaches a clear resolution and its emotional meaning becomes visible.`,`The consequences of earlier events become clear to ${char} and the people around them.`,`${char} faces one final decision that demonstrates what they have learned.`,`The world begins to settle into its new state after the central conflict.`,`A final realization gives the story deeper meaning.`,`The film closes on a memorable image reflecting its theme.`];let cams=['Wide establishing shot, then natural medium shot','Medium shots and close-ups revealing reactions','Tracking shot with purposeful movement','Controlled close-ups and a wider shot for scale','Wide-to-medium transition with a calm final close-up'];return {name:`Scene ${i} — ${names[(i-1)%10]}`,location:'A realistic location connected to the story',action:acts[(i-1)%10],camera:cams[(i-1)%5],light:`${styl
+function makeScene(i,total,char,tone,style){
+  const names=[
+    'The Beginning',
+    'The Problem',
+    'The Journey',
+    'The Turning Point',
+    'The Resolution',
+    'The Consequence',
+    'The Final Choice',
+    'The New Beginning',
+    'The Revelation',
+    'The Future'
+  ];
+
+  const acts=[
+    `${char} is introduced and the audience sees the world before the main conflict changes it.`,
+    `The central problem becomes impossible to ignore, forcing ${char} to respond.`,
+    `${char} takes action and encounters an obstacle that raises the stakes.`,
+    `Pressure reaches its highest point and ${char} must make an important choice.`,
+    `The main conflict reaches a clear resolution and its emotional meaning becomes visible.`,
+    `The consequences of earlier events become clear to ${char} and the people around them.`,
+    `${char} faces one final decision that demonstrates what they have learned.`,
+    `The world begins to settle into its new state after the central conflict.`,
+    `A final realization gives the story deeper meaning.`,
+    `The film closes on a memorable image reflecting its theme.`
+  ];
+
+  const cams=[
+    'Wide establishing shot, then natural medium shot',
+    'Medium shots and close-ups revealing reactions',
+    'Tracking shot with purposeful movement',
+    'Controlled close-ups and a wider shot for scale',
+    'Wide-to-medium transition with a calm final close-up'
+  ];
+
+  const lights=[
+    'Soft natural cinematic lighting',
+    'Realistic slightly dramatic lighting',
+    'Natural environmental lighting with cinematic contrast',
+    'Controlled cinematic lighting emphasizing emotion',
+    'Warm natural light suggesting resolution'
+  ];
+
+  const dialogues=[
+    `${char}: Something has to change.`,
+    `${char}: We cannot ignore this anymore.`,
+    `${char}: There has to be another way.`,
+    `${char}: This is our moment to decide.`,
+    `${char}: We actually did it.`
+  ];
+
+  return {
+    name:`Scene ${i} — ${names[(i-1)%names.length]}`,
+    location:'A realistic location connected to the story',
+    action:acts[(i-1)%acts.length],
+    camera:cams[(i-1)%cams.length],
+    light:`${lights[(i-1)%lights.length]}. Tone: ${tone}. Visual style: ${style}.`,
+    dialogue:dialogues[(i-1)%dialogues.length]
+  };
+}
+
+function runDirector(){
+  const idea=$('directorIdea').value.trim();
+
+  if(!idea){
+    toast('Enter a film idea first');
+    return;
+  }
+
+  const genre=$('directorGenre').value;
+  const style=$('directorStyle').value;
+  const length=$('directorLength').value;
+  const total=parseInt($('directorScenes').value,10);
+  const tone=$('directorTone').value;
+
+  let char=$('directorCharacter').value.trim();
+
+  if(!char){
+    char='the main character';
+  }
+
+  const title=idea.length>55
+    ? idea.substring(0,55).trim()+'...'
+    : idea;
+
+  const logline=`A ${genre.toLowerCase()} story about ${idea}`;
+
+  const beginning=
+    `${char} is introduced as the story begins. The audience learns about the world, the character's situation and the first signs of the central conflict.`;
+
+  const middle=
+    `${char} is forced to take action. Obstacles increase, relationships are tested and the consequences of failure become clearer.`;
+
+  const climax=
+    `The conflict reaches its highest point. ${char} must make a decisive choice that determines what happens next.`;
+
+  const ending=
+    `The consequences of the final choice are revealed. The story ends with an emotional image that reflects its central theme.`;
+
+  const scenes=[];
+
+  for(let i=1;i<=total;i++){
+    scenes.push(makeScene(i,total,char,tone,style));
+  }
+
+  p.title=title;
+  p.idea=idea;
+
+  p.story={
+    logline:logline,
+    beginning:beginning,
+    middle:middle,
+    climax:climax,
+    ending:ending,
+    screenplay:
+      `TITLE: ${title}\n\n`+
+      `GENRE: ${genre}\n`+
+      `TONE: ${tone}\n`+
+      `STYLE: ${style}\n`+
+      `LENGTH: ${length}\n\n`+
+      `LOGLINE:\n${logline}\n\n`+
+      `BEGINNING:\n${beginning}\n\n`+
+      `MIDDLE:\n${middle}\n\n`+
+      `CLIMAX:\n${climax}\n\n`+
+      `ENDING:\n${ending}`
+  };
+
+  if(p.characters.length===0 && char!=='the main character'){
+    const parts=char.split(',');
+    const characterName=parts[0].trim();
+
+    p.characters.push({
+      name:characterName,
+      role:'Main character',
+      appearance:parts.slice(1).join(',').trim() || 'Appearance to be defined by the filmmaker.',
+      personality:'Determined, emotionally believable and consistent throughout the film.',
+      voice:'Natural, believable dialogue appropriate to the character.'
+    });
+  }
+
+  p.scenes=scenes;
+  save();
+  load();
+
+  const master=
+`Create a ${length.toLowerCase()} ${genre.toLowerCase()} film.
+
+TITLE:
+${title}
+
+FILM IDEA:
+${idea}
+
+MAIN CHARACTER:
+${char}
+
+TONE:
+${tone}
+
+VISUAL STYLE:
+${style}
+
+DIRECTOR'S VISUAL RULES:
+Photorealistic cinematic imagery, believable human movement, consistent character identity, consistent clothing and physical appearance, realistic environments, natural lighting, coherent anatomy, cinematic composition, physically believable camera movement, strong visual continuity between shots, no unnecessary text, no watermark.
+
+STORY:
+${logline}
+
+SCENE PLAN:
+
+${scenes.map((s,i)=>
+`SCENE ${i+1}
+${s.name}
+Location: ${s.location}
+Action: ${s.action}
+Camera: ${s.camera}
+Lighting: ${s.light}
+Dialogue/Audio: ${s.dialogue}`
+).join('\n\n')}
+
+CONTINUITY:
+Keep the same characters, costumes, locations, visual language and story progression throughout every scene.`;
+
+  $('directorOutput').style.display='block';
+
+  $('directorSummary').innerHTML=`
+    <div class="result">
+      <h3>${esc(title)}</h3>
+      <div class="small">
+        ${esc(genre)} • ${esc(tone)} • ${esc(style)} • ${total} scenes • ${esc(length)}
+      </div>
+      <p class="small">${esc(logline)}</p>
+    </div>
+  `;
+
+  $('directorSteps').innerHTML=scenes.map((s,i)=>`
+    <div class="step">
+      <span>${i+1}</span>
+      <div>
+        <strong>${esc(s.name)}</strong>
+        <div class="small">${esc(s.action)}</div>
+      </div>
+    </div>
+  `).join('');
+
+  $('masterPrompt').value=master;
+
+  toast('Film plan created');
+}
+
+function sendDirectorToV1(){
+  if(!p.idea){
+    toast('Build a film first');
+    return;
+  }
+
+  save();
+
+  toast('Film sent to your filmmaking workspace');
+
+  setTimeout(()=>{
+    openTab('story');
+  },500);
+}
+
+load();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
