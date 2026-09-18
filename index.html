@@ -129,5 +129,991 @@ function esc(x){return String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&l
 if ('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));
 load();
 </script>
+ <script>
+/* =========================================================
+   MY AI FILMMAKER V2 — AI DIRECTOR
+   This adds a new Director interface without replacing V1.
+   ========================================================= */
+
+(function(){
+
+const directorStyle = document.createElement('style');
+
+directorStyle.textContent = `
+/* ===== AI DIRECTOR ===== */
+
+.director-nav{
+  background:linear-gradient(135deg,#24164d,#151b38)!important;
+  color:#fff!important;
+  border-color:#7c5cff!important;
+  font-weight:800!important;
+}
+
+.director-panel{
+  display:none;
+}
+
+.director-panel.active{
+  display:block;
+}
+
+.director-hero{
+  background:
+    radial-gradient(circle at top right,#7c5cff55,transparent 45%),
+    linear-gradient(145deg,#17102e,#11182f);
+  border:1px solid #55458f;
+  border-radius:22px;
+  padding:20px;
+  margin-bottom:14px;
+}
+
+.director-hero h2{
+  font-size:23px;
+  margin:0 0 7px;
+}
+
+.director-hero p{
+  color:#bfc7df;
+  font-size:13px;
+  line-height:1.6;
+}
+
+.director-badge{
+  display:inline-block;
+  background:#7c5cff22;
+  border:1px solid #7c5cff77;
+  color:#d9d0ff;
+  padding:5px 9px;
+  border-radius:999px;
+  font-size:11px;
+  margin-bottom:10px;
+}
+
+.director-card{
+  background:rgba(20,27,47,.97);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:16px;
+  margin-bottom:14px;
+}
+
+.director-card h3{
+  margin-top:0;
+  font-size:17px;
+}
+
+.director-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.director-output{
+  background:#0b1122;
+  border:1px solid #303b5d;
+  border-radius:14px;
+  padding:14px;
+  margin-top:10px;
+}
+
+.director-output h4{
+  margin:0 0 7px;
+  font-size:14px;
+  color:#ddd7ff;
+}
+
+.director-output p{
+  margin:5px 0;
+  color:#cbd3e8;
+  line-height:1.55;
+  font-size:13px;
+}
+
+.director-scene{
+  border:1px solid #303b5d;
+  background:#10182c;
+  border-radius:14px;
+  padding:14px;
+  margin:10px 0;
+}
+
+.director-scene-title{
+  font-weight:800;
+  font-size:15px;
+  margin-bottom:7px;
+}
+
+.director-shot{
+  margin-top:9px;
+  padding:10px;
+  border-left:3px solid #7c5cff;
+  background:#0d1426;
+  border-radius:8px;
+  font-size:12px;
+  color:#c8d0e5;
+  line-height:1.55;
+}
+
+.director-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+
+.director-actions button{
+  flex:1;
+  min-width:130px;
+}
+
+.director-status{
+  display:none;
+  padding:10px 12px;
+  border-radius:10px;
+  background:#19243c;
+  border:1px solid #354567;
+  color:#cbd5ea;
+  font-size:12px;
+  margin-top:10px;
+}
+
+@media(max-width:560px){
+  .director-grid{
+    grid-template-columns:1fr;
+  }
+}
+`;
+
+document.head.appendChild(directorStyle);
+
+
+/* =========================================================
+   CREATE THE DIRECTOR BUTTON
+   ========================================================= */
+
+const nav = document.getElementById('nav');
+
+if(nav && !document.querySelector('[data-tab="director"]')){
+
+  const directorButton = document.createElement('button');
+
+  directorButton.textContent = '🧠 AI Director';
+  directorButton.dataset.tab = 'director';
+  directorButton.className = 'director-nav';
+
+  nav.appendChild(directorButton);
+}
+
+
+/* =========================================================
+   CREATE THE DIRECTOR INTERFACE
+   ========================================================= */
+
+const main = document.querySelector('main');
+
+if(!main || document.getElementById('director')) return;
+
+const directorSection = document.createElement('section');
+
+directorSection.id = 'director';
+directorSection.className = 'panel director-panel';
+
+directorSection.innerHTML = `
+
+<div class="director-hero">
+
+  <span class="director-badge">MY AI FILMMAKER • VERSION 2</span>
+
+  <h2>🧠 AI Director</h2>
+
+  <p>
+    Turn a simple idea into a structured film plan.
+    The Director organizes your story, characters, scenes,
+    shots, camera direction, lighting, dialogue and
+    generation prompts.
+  </p>
+
+</div>
+
+
+<div class="director-card">
+
+  <h3>🎬 Start your film</h3>
+
+  <label>Film title</label>
+  <input id="dTitle"
+    placeholder="e.g. The Last Desk">
+
+  <label>Film idea</label>
+  <textarea id="dIdea"
+    placeholder="Describe the movie you want to make..."></textarea>
+
+  <div class="director-grid">
+
+    <div>
+      <label>Genre</label>
+
+      <select id="dGenre">
+        <option>Drama</option>
+        <option>Action</option>
+        <option>Adventure</option>
+        <option>Comedy</option>
+        <option>Science Fiction</option>
+        <option>Fantasy</option>
+        <option>Mystery</option>
+        <option>Thriller</option>
+        <option>Romance</option>
+        <option>Documentary</option>
+        <option>Inspirational</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Visual style</label>
+
+      <select id="dStyle">
+        <option>Cinematic realism</option>
+        <option>Photorealistic</option>
+        <option>Stylized cinematic</option>
+        <option>Dark cinematic</option>
+        <option>Bright cinematic</option>
+        <option>Documentary realism</option>
+        <option>Futuristic</option>
+        <option>Fantasy realism</option>
+      </select>
+    </div>
+
+  </div>
+
+
+  <div class="director-grid">
+
+    <div>
+      <label>Film length</label>
+
+      <select id="dLength">
+        <option>1–3 minutes</option>
+        <option>3–5 minutes</option>
+        <option>5–10 minutes</option>
+        <option>10–20 minutes</option>
+        <option>20–30 minutes</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Number of scenes</label>
+
+      <select id="dScenes">
+        <option value="5">5 scenes</option>
+        <option value="7">7 scenes</option>
+        <option value="10">10 scenes</option>
+        <option value="12">12 scenes</option>
+      </select>
+    </div>
+
+  </div>
+
+
+  <label>Story tone / mood</label>
+
+  <input id="dTone"
+    placeholder="e.g. emotional, suspenseful, hopeful">
+
+
+  <label>Main character name</label>
+
+  <input id="dHero"
+    placeholder="e.g. Kofi">
+
+
+  <div class="director-actions">
+
+    <button class="primary"
+      onclick="MAFBuildDirectorFilm()">
+      🎬 Build My Film
+    </button>
+
+    <button class="secondary"
+      onclick="MAFUseProjectIdea()">
+      📂 Use Project Idea
+    </button>
+
+  </div>
+
+  <div id="directorStatus"
+       class="director-status">
+  </div>
+
+</div>
+
+
+<div id="directorResults"></div>
+
+`;
+
+
+main.appendChild(directorSection);
+
+
+/* =========================================================
+   NAVIGATION — ADD DIRECTOR TO EXISTING NAV SYSTEM
+   ========================================================= */
+
+const directorBtn =
+  document.querySelector('[data-tab="director"]');
+
+if(directorBtn){
+
+  directorBtn.onclick = function(){
+
+    document.querySelectorAll('nav button')
+      .forEach(x => x.classList.remove('active'));
+
+    directorBtn.classList.add('active');
+
+    document.querySelectorAll('.panel')
+      .forEach(x => x.classList.remove('active'));
+
+    document.getElementById('director')
+      .classList.add('active');
+
+    MAFUseProjectIdea(false);
+  };
+}
+
+
+/* =========================================================
+   USE EXISTING PROJECT IDEA
+   ========================================================= */
+
+window.MAFUseProjectIdea = function(showMessage=true){
+
+  const title =
+    document.getElementById('title')?.value ||
+    p.title ||
+    '';
+
+  const idea =
+    document.getElementById('idea')?.value ||
+    p.idea ||
+    '';
+
+  document.getElementById('dTitle').value = title;
+  document.getElementById('dIdea').value = idea;
+
+  if(showMessage){
+
+    const status =
+      document.getElementById('directorStatus');
+
+    status.textContent =
+      'Project information loaded into the Director.';
+
+    status.style.display = 'block';
+
+    setTimeout(()=>{
+      status.style.display='none';
+    },2000);
+  }
+};
+
+
+/* =========================================================
+   BUILD THE FILM
+   ========================================================= */
+
+window.MAFBuildDirectorFilm = function(){
+
+  const title =
+    document.getElementById('dTitle').value.trim() ||
+    'Untitled Film';
+
+  const idea =
+    document.getElementById('dIdea').value.trim();
+
+  const genre =
+    document.getElementById('dGenre').value;
+
+  const style =
+    document.getElementById('dStyle').value;
+
+  const length =
+    document.getElementById('dLength').value;
+
+  const sceneCount =
+    parseInt(document.getElementById('dScenes').value);
+
+  const tone =
+    document.getElementById('dTone').value.trim() ||
+    'cinematic and emotional';
+
+  const hero =
+    document.getElementById('dHero').value.trim() ||
+    'the main character';
+
+
+  if(!idea){
+
+    alert('Please enter your film idea first.');
+    return;
+  }
+
+
+  const status =
+    document.getElementById('directorStatus');
+
+  status.textContent =
+    '🎬 Director is building your film plan...';
+
+  status.style.display='block';
+
+
+  setTimeout(()=>{
+
+    const film =
+      MAFCreateFilmPlan(
+        title,
+        idea,
+        genre,
+        style,
+        length,
+        sceneCount,
+        tone,
+        hero
+      );
+
+    MAFDisplayDirectorFilm(film);
+
+    status.textContent =
+      '✓ Film plan created successfully.';
+
+    setTimeout(()=>{
+      status.style.display='none';
+    },2500);
+
+  },350);
+
+};
+
+
+/* =========================================================
+   FILM PLANNING ENGINE
+   ========================================================= */
+
+function MAFCreateFilmPlan(
+  title,
+  idea,
+  genre,
+  style,
+  length,
+  sceneCount,
+  tone,
+  hero
+){
+
+  const storyBeginning =
+    `${hero} begins in an ordinary situation, but the central problem introduced by the film idea changes everything.`;
+
+  const storyMiddle =
+    `The situation becomes more difficult. ${hero} must make important choices, face obstacles and move closer to the central conflict.`;
+
+  const storyClimax =
+    `The pressure reaches its highest point. ${hero} must confront the main challenge and make a decisive choice.`;
+
+  const storyEnding =
+    `The consequences of the final choice are revealed, giving the audience a clear emotional conclusion.`;
+
+
+
+  const sceneTemplates = [
+
+    {
+      title:'Opening — Establishing the World',
+      purpose:'Introduce the world, location and main character.',
+      camera:'Wide establishing shot followed by a slow push-in.',
+      lighting:'Natural cinematic lighting with controlled contrast.',
+      action:`Introduce ${hero} and establish the situation described in the film idea.`,
+      audio:'Ambient environment, subtle opening music and natural sound.',
+      dialogue:`${hero} is introduced naturally through action or narration.`
+    },
+
+    {
+      title:'The Problem Appears',
+      purpose:'Introduce the central conflict.',
+      camera:'Medium shots mixed with close-ups showing reactions.',
+      lighting:'Lighting begins to reflect the developing tension.',
+      action:`The main problem becomes clear and ${hero} realizes that something must change.`,
+      audio:'Music becomes slightly more tense while environmental sounds remain realistic.',
+      dialogue:`${hero} reacts to the problem and explains or discovers what is at stake.`
+    },
+
+    {
+      title:'The Journey',
+      purpose:'Develop the story and increase the stakes.',
+      camera:'Tracking shots, over-the-shoulder shots and controlled close-ups.',
+      lighting:'Cinematic directional light with atmosphere appropriate to the location.',
+      action:`${hero} attempts to solve the problem but encounters an obstacle.`,
+      audio:'Layered environmental sound with developing musical tension.',
+      dialogue:`${hero} communicates with another character or reveals an important thought.`
+    },
+
+    {
+      title:'The Turning Point',
+      purpose:'Create the major dramatic or action turning point.',
+      camera:'Dynamic camera movement followed by an intense close-up.',
+      lighting:'Strong cinematic contrast while preserving realistic skin tones and environments.',
+      action:`${hero} faces the most important challenge and must make a difficult decision.`,
+      audio:'Music reaches its strongest emotional point before briefly dropping into silence.',
+      dialogue:`${hero} makes the decision that changes the direction of the story.`
+    },
+
+    {
+      title:'Resolution',
+      purpose:'Resolve the central conflict and end the film.',
+      camera:'Calm wide shot followed by a final emotional close-up.',
+      lighting:'Balanced cinematic lighting that reflects the final emotional tone.',
+      action:`The consequences of ${hero}'s decision are revealed and the story reaches its conclusion.`,
+      audio:'Emotional closing music mixed with natural environmental sound.',
+      dialogue:`The final dialogue or narration gives the audience the meaning of the journey.`
+    }
+
+  ];
+
+
+  const scenes=[];
+
+  for(let i=0;i<sceneCount;i++){
+
+    const base =
+      sceneTemplates[i % sceneTemplates.length];
+
+    const sceneNumber =
+      i+1;
+
+    scenes.push({
+
+      name:
+        `Scene ${sceneNumber} — ${base.title}`,
+
+      location:
+        'Location determined by the story',
+
+      action:
+        `${base.action} Story context: ${idea}`,
+
+      camera:
+        base.camera,
+
+      light:
+        `${base.lighting} Overall style: ${style}. Mood: ${tone}.`,
+
+      dialogue:
+        base.dialogue,
+
+      purpose:
+        base.purpose,
+
+      audio:
+        base.audio,
+
+      shot:
+        `Cinematic ${style} shot, realistic composition, believable human movement, visual continuity, ${tone} mood.`
+
+    });
+
+  }
+
+
+
+  const character = {
+
+    name:hero,
+
+    role:'Protagonist',
+
+    appearance:
+      'Create a distinctive, believable appearance appropriate to the story. Maintain the same facial identity, hairstyle, clothing logic and physical characteristics across every scene.',
+
+    personality:
+      'Defined by the film idea, with clear motivation, strengths, weaknesses and emotional development.',
+
+    voice:
+      'Natural, believable dialogue delivery appropriate to the character and story.'
+
+  };
+
+
+
+  const screenplay =
+
+`TITLE: ${title}
+
+GENRE: ${genre}
+
+VISUAL STYLE: ${style}
+
+FILM LENGTH: ${length}
+
+TONE: ${tone}
+
+LOGLINE:
+${idea}
+
+BEGINNING:
+${storyBeginning}
+
+MIDDLE / CONFLICT:
+${storyMiddle}
+
+CLIMAX:
+${storyClimax}
+
+ENDING:
+${storyEnding}
+
+DIRECTOR'S NOTE:
+Tell the story visually. Prioritize strong composition, believable performances, continuity between shots and clear emotional progression.
+
+`;
+
+
+
+  return {
+
+    title,
+    idea,
+    genre,
+    style,
+    length,
+    tone,
+    hero,
+
+    logline:idea,
+
+    beginning:storyBeginning,
+
+    middle:storyMiddle,
+
+    climax:storyClimax,
+
+    ending:storyEnding,
+
+    screenplay,
+
+    character,
+
+    scenes
+
+  };
+
+}
+
+
+/* =========================================================
+   DISPLAY RESULT
+   ========================================================= */
+
+function MAFDisplayDirectorFilm(film){
+
+  const output =
+    document.getElementById('directorResults');
+
+  output.innerHTML = `
+
+  <div class="director-card">
+
+    <h3>🎬 ${esc(film.title)}</h3>
+
+    <span class="badge">${esc(film.genre)}</span>
+    <span class="badge">${esc(film.style)}</span>
+    <span class="badge">${esc(film.length)}</span>
+
+  </div>
+
+
+  <div class="director-card">
+
+    <h3>🧠 Story Development</h3>
+
+    <div class="director-output">
+
+      <h4>Logline</h4>
+      <p>${esc(film.logline)}</p>
+
+      <h4>Beginning</h4>
+      <p>${esc(film.beginning)}</p>
+
+      <h4>Middle / Conflict</h4>
+      <p>${esc(film.middle)}</p>
+
+      <h4>Climax</h4>
+      <p>${esc(film.climax)}</p>
+
+      <h4>Ending</h4>
+      <p>${esc(film.ending)}</p>
+
+    </div>
+
+  </div>
+
+
+  <div class="director-card">
+
+    <h3>👤 Character Creation</h3>
+
+    <div class="director-output">
+
+      <h4>${esc(film.character.name)}</h4>
+
+      <p>
+        <strong>Role:</strong>
+        ${esc(film.character.role)}
+      </p>
+
+      <p>
+        <strong>Appearance:</strong>
+        ${esc(film.character.appearance)}
+      </p>
+
+      <p>
+        <strong>Personality:</strong>
+        ${esc(film.character.personality)}
+      </p>
+
+      <p>
+        <strong>Voice:</strong>
+        ${esc(film.character.voice)}
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="director-card">
+
+    <h3>🎞️ Scene Structure & Shot Direction</h3>
+
+    ${film.scenes.map((s,i)=>`
+
+      <div class="director-scene">
+
+        <div class="director-scene-title">
+          ${esc(s.name)}
+        </div>
+
+        <p class="small">
+          <strong>Purpose:</strong>
+          ${esc(s.purpose)}
+        </p>
+
+        <p class="small">
+          <strong>Action:</strong>
+          ${esc(s.action)}
+        </p>
+
+        <div class="director-shot">
+          📷 <strong>Camera:</strong>
+          ${esc(s.camera)}
+        </div>
+
+        <div class="director-shot">
+          💡 <strong>Lighting & Mood:</strong>
+          ${esc(s.light)}
+        </div>
+
+        <div class="director-shot">
+          🗣️ <strong>Dialogue:</strong>
+          ${esc(s.dialogue)}
+        </div>
+
+        <div class="director-shot">
+          🔊 <strong>Audio:</strong>
+          ${esc(s.audio)}
+        </div>
+
+      </div>
+
+    `).join('')}
+
+  </div>
+
+
+  <div class="director-card">
+
+    <h3>🤖 Generation Prompt Preparation</h3>
+
+    <div class="director-output">
+
+      <textarea
+        id="directorPrompt"
+        style="min-height:300px"
+      >${esc(MAFCreateMasterPrompt(film))}</textarea>
+
+    </div>
+
+  </div>
+
+
+  <div class="director-card">
+
+    <h3>🚀 Send Director Plan to V1</h3>
+
+    <p class="small">
+      This will place the Director's story, character and scenes
+      into your existing V1 filmmaking sections.
+    </p>
+
+    <div class="director-actions">
+
+      <button class="primary"
+        onclick="MAFSyncDirectorToV1()">
+        🔄 Send to V1
+      </button>
+
+      <button class="secondary"
+        onclick="MAFCopyDirectorPrompt()">
+        📋 Copy Master Prompt
+      </button>
+
+    </div>
+
+  </div>
+
+  `;
+
+
+  window.MAFCurrentFilm = film;
+
+}
+
+
+/* =========================================================
+   MASTER GENERATION PROMPT
+   ========================================================= */
+
+function MAFCreateMasterPrompt(film){
+
+  const character =
+    film.character;
+
+  let prompt =
+
+`CINEMATIC FILM GENERATION MASTER PROMPT
+
+FILM:
+${film.title}
+
+GENRE:
+${film.genre}
+
+VISUAL STYLE:
+${film.style}
+
+LENGTH:
+${film.length}
+
+TONE:
+${film.tone}
+
+STORY:
+${film.idea}
+
+CHARACTER CONTINUITY:
+${character.name} is the main character.
+
+Maintain consistent identity, facial structure, hairstyle, clothing logic, body proportions, age, personality and visual appearance throughout the entire film.
+
+CHARACTER:
+${character.appearance}
+
+DIRECTING PRINCIPLES:
+Use cinematic composition, believable environments, natural human movement, realistic lighting, physically plausible motion, consistent spatial relationships and visual continuity between shots.
+
+Avoid random changes in character identity, clothing, location design or time of day unless specifically required by the story.
+
+`;
+
+
+
+  film.scenes.forEach((s,i)=>{
+
+    prompt += `
+
+SCENE ${i+1}:
+${s.name}
+
+ACTION:
+${s.action}
+
+CAMERA:
+${s.camera}
+
+LIGHTING:
+${s.light}
+
+DIALOGUE:
+${s.dialogue}
+
+AUDIO:
+${s.audio}
+
+`;
+
+  });
+
+
+  prompt += `
+
+QUALITY DIRECTION:
+High-quality cinematic presentation.
+Natural performances.
+Believable environments.
+Consistent character identity.
+Professional camera language.
+Realistic lighting.
+Strong visual storytelling.
+No unnecessary text or watermarks.
+Preserve continuity from shot to shot.
+`;
+
+  return prompt;
+
+}
+
+
+/* =========================================================
+   SEND DIRECTOR PLAN INTO EXISTING V1
+   ========================================================= */
+
+window.MAFSyncDirectorToV1 = function(){
+
+  const film =
+    window.MAFCurrentFilm;
+
+  if(!film){
+
+    alert('Build the film first.');
+    return;
+
+  }
+
+
+  /*
+     Preserve the existing V1 data where possible.
+     The Director becomes an additional planning layer.
+  */
+
+  p.title =
+    film.title;
+
+  p.idea =
+    film.idea;
+
+
+  p.story = {
+
+    logline:
+      film.loglin 
 </body>
 </html>
