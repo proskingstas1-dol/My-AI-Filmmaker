@@ -1984,6 +1984,443 @@ function v41InstallPromptBuilder(){
   label.id='v41PromptShotLabel';
   label.textContent='Choose shot (optional)';
 
+  document.createElement('select');
+
+  select.id='v41PromptShotSelect';
+  select.style.marginBottom='10px';
+
+  label.htmlFor=select.id;
+
+  sceneSelect.parentNode.insertBefore(
+    label,
+    sceneSelect.nextSibling
+  );
+
+  sceneSelect.parentNode.insertBefore(
+    select,
+    label.nextSibling
+  );
+
+  select.addEventListener('change',function(){
+    v41BuildPromptFromSelection();
+  });
+
+  v41RefreshPromptShots();
+
+}
+
+
+/* ---------------------------------------------------------
+   REFRESH SHOT SELECTOR
+--------------------------------------------------------- */
+
+window.v41RefreshPromptShots=function(){
+
+  const select=document.getElementById('v41PromptShotSelect');
+
+  if(!select)return;
+
+  const shots=window.__v4Shots||[];
+
+  if(!shots.length){
+
+    select.innerHTML=
+      '<option value="">No generated shots yet</option>';
+
+    return;
+  }
+
+  select.innerHTML=
+    '<option value="">Choose a shot</option>'+
+    shots.map((shot,i)=>
+      `<option value="${i}">
+        Shot ${i+1} — ${v41Esc(shot.type||'Untitled shot')}
+      </option>`
+    ).join('');
+
+  if(window.__v41PromptTarget){
+
+    select.value=
+      String(window.__v41PromptTarget.shotIndex);
+
+  }
+
+};
+
+
+/* ---------------------------------------------------------
+   BUILD PROMPT FROM SELECTED SHOT
+--------------------------------------------------------- */
+
+window.v41BuildPromptFromSelection=function(){
+
   const select=
+    document.getElementById('v41PromptShotSelect');
+
+  const sceneSelect=
+    document.getElementById('sceneSelect');
+
+  if(!select)return;
+
+  const shotIndex=
+    parseInt(select.value,10);
+
+  if(Number.isNaN(shotIndex))return;
+
+  const shots=window.__v4Shots||[];
+
+  const shot=shots[shotIndex];
+
+  if(!shot)return;
+
+  const sceneIndex=
+    sceneSelect
+      ? parseInt(sceneSelect.value,10)
+      : NaN;
+
+  const scene=
+    !Number.isNaN(sceneIndex) &&
+    p.scenes[sceneIndex]
+      ? p.scenes[sceneIndex]
+      : null;
+
+  let prompt=shot.prompt||v41BuildShotPrompt(shot);
+
+  if(scene){
+
+    prompt=
+`SCENE:
+${scene.name||'Untitled scene'}
+
+LOCATION:
+${scene.location||'Not specified'}
+
+SCENE ACTION:
+${scene.action||'Not specified'}
+
+${prompt}`;
+
+  }
+
+  const promptBox=
+    document.getElementById('prompt');
+
+  if(promptBox){
+
+    promptBox.value=prompt.trim();
+
+  }
+
+};
+
+
+/* ---------------------------------------------------------
+   LOAD SAVED V4.1 SHOTS
+--------------------------------------------------------- */
+
+function v41LoadSavedShots(){
+
+  const selected=
+    v41GetSelectedScene();
+
+  if(!selected)return;
+
+  const saved=
+    selected.scene.shots;
+
+  if(!Array.isArray(saved) || !saved.length){
+    return;
+  }
+
+  window.__v4Shots=
+    saved.map(shot=>({
+
+      ...shot,
+
+      type:shot.type||'Medium Shot',
+
+      angle:shot.angle||'Eye level',
+
+      movement:
+        shot.movement||
+        'Subtle controlled camera movement',
+
+      framing:
+        shot.framing||
+        'Medium cinematic framing',
+
+      subject:
+        shot.subject||
+        v41Subject(),
+
+      action:
+        shot.action||
+        selected.scene.action||
+        'Perform the scene action naturally.',
+
+      lighting:
+        shot.lighting||
+        selected.scene.light||
+        'Natural cinematic lighting',
+
+      environment:
+        shot.environment||
+        selected.scene.location||
+        'Scene environment',
+
+      style:
+        shot.style||
+        v41DefaultStyle(),
+
+      duration:
+        shot.duration||
+        '4–6 seconds',
+
+      dialogue:
+        shot.dialogue||
+        selected.scene.dialogue||
+        'Natural ambient sound.',
+
+      continuity:
+        shot.continuity||
+        v41Continuity(),
+
+      prompt:
+        shot.prompt||
+        v41BuildShotPrompt(shot)
+
+    }));
+
+  v41RenderShots();
+
+}
+
+
+/* ---------------------------------------------------------
+   GENERATE V4.1 SHOTS
+--------------------------------------------------------- */
+
+window.v41GenerateShots=function(){
+
+  const selected=
+    v41GetSelectedScene();
+
+  if(!selected){
+
+    toast('Select a scene first');
+
+    return;
+  }
+
+  const shots=
+    v41MakeShotPlan(selected.scene);
+
+  window.__v4Shots=shots;
+
+  document.getElementById(
+    'v4SceneInfo'
+  ).style.display='block';
+
+  document.getElementById(
+    'v4SceneSummary'
+  ).innerHTML=`
+
+    <div class="result">
+
+      <strong>
+        ${v41Esc(
+          selected.scene.name||
+          'Untitled scene'
+        )}
+      </strong>
+
+      <div class="small">
+        Location:
+        ${v41Esc(
+          selected.scene.location||
+          'Not specified'
+        )}
+      </div>
+
+      <div class="small">
+        Action:
+        ${v41Esc(
+          selected.scene.action||
+          'Not specified'
+        )}
+      </div>
+
+      <div class="small">
+        Director's Assistant:
+        Scene-aware suggestions generated.
+        You can edit every filmmaking choice.
+      </div>
+
+    </div>
+
+  `;
+
+  v41RenderShots();
+
+  toast('V4.1 scene-aware shots created');
+
+};
+
+
+/* ---------------------------------------------------------
+   CLEAR V4.1 SHOTS
+--------------------------------------------------------- */
+
+window.v41ClearShots=function(){
+
+  window.__v4Shots=[];
+
+  const output=
+    document.getElementById('v4ShotOutput');
+
+  const info=
+    document.getElementById('v4SceneInfo');
+
+  const box=
+    document.getElementById('v4Shots');
+
+  if(output)
+    output.style.display='none';
+
+  if(info)
+    info.style.display='none';
+
+  if(box)
+    box.innerHTML='';
+
+};
+
+
+/* ---------------------------------------------------------
+   AUTO-REBUILD PROMPT WHEN A FIELD CHANGES
+--------------------------------------------------------- */
+
+function v41WatchShotFields(){
+
+  const shots=
+    window.__v4Shots||[];
+
+  shots.forEach((shot,i)=>{
+
+    [
+      'v41type',
+      'v41angle',
+      'v41movement',
+      'v41framing',
+      'v41subject',
+      'v41action',
+      'v41lighting',
+      'v41environment',
+      'v41style',
+      'v41duration',
+      'v41dialogue',
+      'v41continuity'
+    ].forEach(prefix=>{
+
+      const el=
+        document.getElementById(prefix+i);
+
+      if(!el)return;
+
+      el.addEventListener(
+        'input',
+        function(){
+
+          v41RebuildPrompt(i);
+
+        }
+      );
+
+    });
+
+  });
+
+}
+
+
+/* ---------------------------------------------------------
+   WRAP RENDER FUNCTION
+--------------------------------------------------------- */
+
+const originalV41RenderShots=
+  v41RenderShots;
+
+v41RenderShots=function(){
+
+  originalV41RenderShots();
+
+  setTimeout(function(){
+
+    v41WatchShotFields();
+
+  },0);
+
+};
+
+
+/* ---------------------------------------------------------
+   WRAP ORIGINAL V4 GENERATE BUTTON
+--------------------------------------------------------- */
+
+const originalV4GenerateShots=
+  window.v4GenerateShots;
+
+window.v4GenerateShots=function(){
+
+  v41GenerateShots();
+
+};
+
+
+/* ---------------------------------------------------------
+   WRAP ORIGINAL V4 SAVE BUTTON
+--------------------------------------------------------- */
+
+const originalV4SaveShots=
+  window.v4SaveShots;
+
+window.v4SaveShots=function(){
+
+  v41SaveShots();
+
+};
+
+
+/* ---------------------------------------------------------
+   INITIALISE V4.1
+--------------------------------------------------------- */
+
+function v41Init(){
+
+  v41InstallPromptBuilder();
+
+  v4RefreshScenes();
+
+}
+
+
+/* Wait until the original V3/V4 page is ready */
+if(document.readyState==='loading'){
+
+  document.addEventListener(
+    'DOMContentLoaded',
+    v41Init
+  );
+
+}else{
+
+  v41Init();
+
+}
+
+})();
+</script>
+
+<!-- V4.1 SHOT DIRECTOR UPGRADE END -->
 </body>
 </html>
