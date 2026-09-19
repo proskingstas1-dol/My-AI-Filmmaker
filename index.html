@@ -2421,5 +2421,587 @@ if(document.readyState==='loading'){
 </script>
 
 <!-- V4.1 SHOT DIRECTOR UPGRADE END -->
+
+ <!-- V4.2 SHOT DIRECTOR SMART SUGGESTIONS START -->
+<script>
+/*
+=========================================================
+ V4.2 SHOT DIRECTOR — SMART SUGGESTIONS
+ --------------------------------------------------------
+ Director's Assistant:
+ • Suggests filmmaking choices
+ • User can accept, change, or type their own
+ • Suggestions never lock the user into one choice
+ • Works with the existing V4.1 Shot Director
+ • Keeps Character Bible / continuity information
+ • Keeps generation-ready prompts
+=========================================================
+*/
+
+(function(){
+
+  /* -----------------------------------------------------
+     SMART SUGGESTION LISTS
+  ----------------------------------------------------- */
+
+  const V42_SUGGESTIONS = {
+
+    shotType: [
+      'Establishing Wide Shot',
+      'Wide Shot',
+      'Medium-Wide Shot',
+      'Medium Shot',
+      'Medium Close-Up',
+      'Close-Up',
+      'Extreme Close-Up',
+      'Over-the-Shoulder Shot',
+      'Two-Shot',
+      'Point-of-View Shot',
+      'Reaction Shot',
+      'Action Shot',
+      'Detail Insert Shot',
+      'Environmental Shot'
+    ],
+
+    angle: [
+      'Eye Level',
+      'Low Angle',
+      'High Angle',
+      'Overhead',
+      'Bird’s-Eye View',
+      'Worm’s-Eye View',
+      'Dutch Angle',
+      'Shoulder Level',
+      'Point-of-View Angle'
+    ],
+
+    movement: [
+      'Locked-Off',
+      'Slow Push-In',
+      'Slow Pull-Back',
+      'Pan Left',
+      'Pan Right',
+      'Tilt Up',
+      'Tilt Down',
+      'Dolly Forward',
+      'Dolly Backward',
+      'Tracking Shot',
+      'Handheld',
+      'Slow Orbit',
+      'Crane Up',
+      'Crane Down',
+      'Subtle Camera Drift'
+    ],
+
+    framing: [
+      'Extreme Wide Framing',
+      'Wide Framing',
+      'Medium-Wide Framing',
+      'Medium Framing',
+      'Medium Close-Up Framing',
+      'Close Framing',
+      'Extreme Close-Up Framing',
+      'Over-the-Shoulder Framing',
+      'Two-Shot Framing',
+      'Tight Detail Framing'
+    ],
+
+    lighting: [
+      'Soft Natural Daylight',
+      'Warm Golden-Hour Light',
+      'Cool Morning Light',
+      'Soft Overcast Light',
+      'Bright Natural Interior Light',
+      'Low-Key Cinematic Lighting',
+      'High-Key Cinematic Lighting',
+      'Dramatic Side Lighting',
+      'Natural Backlighting',
+      'Window Light',
+      'Practical Lighting',
+      'Moody Ambient Lighting'
+    ],
+
+    style: [
+      'Photorealistic Cinematic',
+      'Naturalistic Film',
+      'Documentary Realism',
+      'Cinematic Realism',
+      'Grounded Realism',
+      'Warm Cinematic',
+      'Moody Cinematic',
+      'Intimate Cinematic',
+      'Epic Cinematic',
+      'Suspenseful Cinematic',
+      'Soft Dreamlike',
+      'Gritty Realistic',
+      'Clean Modern'
+    ],
+
+    duration: [
+      '2–3 seconds',
+      '3–4 seconds',
+      '4–5 seconds',
+      '4–6 seconds',
+      '5–7 seconds',
+      '6–8 seconds',
+      '8–10 seconds',
+      '10–12 seconds'
+    ],
+
+    audio: [
+      'Natural ambience',
+      'Room tone',
+      'Footsteps',
+      'Dialogue with natural ambience',
+      'Quiet atmosphere',
+      'Environmental sound',
+      'Natural background sound',
+      'Dialogue and subtle room tone',
+      'Cinematic ambient sound'
+    ]
+
+  };
+
+
+  /* -----------------------------------------------------
+     CREATE A DATAlIST
+  ----------------------------------------------------- */
+
+  function v42CreateDatalist(id,values){
+
+    if(document.getElementById(id))return;
+
+    const list=document.createElement('datalist');
+
+    list.id=id;
+
+    values.forEach(value=>{
+
+      const option=document.createElement('option');
+
+      option.value=value;
+
+      list.appendChild(option);
+
+    });
+
+    document.body.appendChild(list);
+
+  }
+
+
+  /* -----------------------------------------------------
+     INSTALL ALL SUGGESTION LISTS
+  ----------------------------------------------------- */
+
+  function v42InstallSuggestionLists(){
+
+    v42CreateDatalist(
+      'v42ShotTypeSuggestions',
+      V42_SUGGESTIONS.shotType
+    );
+
+    v42CreateDatalist(
+      'v42AngleSuggestions',
+      V42_SUGGESTIONS.angle
+    );
+
+    v42CreateDatalist(
+      'v42MovementSuggestions',
+      V42_SUGGESTIONS.movement
+    );
+
+    v42CreateDatalist(
+      'v42FramingSuggestions',
+      V42_SUGGESTIONS.framing
+    );
+
+    v42CreateDatalist(
+      'v42LightingSuggestions',
+      V42_SUGGESTIONS.lighting
+    );
+
+    v42CreateDatalist(
+      'v42StyleSuggestions',
+      V42_SUGGESTIONS.style
+    );
+
+    v42CreateDatalist(
+      'v42DurationSuggestions',
+      V42_SUGGESTIONS.duration
+    );
+
+    v42CreateDatalist(
+      'v42AudioSuggestions',
+      V42_SUGGESTIONS.audio
+    );
+
+  }
+
+
+  /* -----------------------------------------------------
+     SUBJECT / CHARACTER SUGGESTIONS
+  ----------------------------------------------------- */
+
+  function v42InstallCharacterSuggestions(){
+
+    if(document.getElementById('v42CharacterSuggestions'))
+      return;
+
+    const values=[];
+
+    if(Array.isArray(p.characters)){
+
+      p.characters.forEach(character=>{
+
+        if(character && character.name){
+
+          values.push(character.name);
+
+        }
+
+      });
+
+    }
+
+    if(!values.length)return;
+
+    v42CreateDatalist(
+      'v42CharacterSuggestions',
+      values
+    );
+
+  }
+
+
+  /* -----------------------------------------------------
+     ADD SUGGESTION LABEL
+  ----------------------------------------------------- */
+
+  function v42SuggestionLabel(text){
+
+    const span=document.createElement('span');
+
+    span.className='v42-suggestion-label';
+
+    span.textContent='💡 Director suggestion available';
+
+    span.title=
+      'The Director suggests a starting point. You can accept it, choose another suggestion, or type your own.';
+
+    return span;
+
+  }
+
+
+  /* -----------------------------------------------------
+     ADD SUGGESTION SUPPORT TO INPUT
+  ----------------------------------------------------- */
+
+  function v42EnhanceInput(id,listId){
+
+    const input=document.getElementById(id);
+
+    if(!input)return;
+
+    if(listId){
+
+      input.setAttribute('list',listId);
+
+    }
+
+    if(input.dataset.v42Enhanced)return;
+
+    input.dataset.v42Enhanced='true';
+
+    const label=input.parentElement ?
+      input.parentElement.querySelector('label') :
+      null;
+
+    if(label){
+
+      label.appendChild(
+        v42SuggestionLabel('')
+      );
+
+    }
+
+  }
+
+
+  /* -----------------------------------------------------
+     ENHANCE CURRENT SHOT FIELDS
+  ----------------------------------------------------- */
+
+  function v42EnhanceShotFields(){
+
+    const shots=window.__v4Shots||[];
+
+    shots.forEach((shot,i)=>{
+
+      v42EnhanceInput(
+        'v41type'+i,
+        'v42ShotTypeSuggestions'
+      );
+
+      v42EnhanceInput(
+        'v41angle'+i,
+        'v42AngleSuggestions'
+      );
+
+      v42EnhanceInput(
+        'v41movement'+i,
+        'v42MovementSuggestions'
+      );
+
+      v42EnhanceInput(
+        'v41framing'+i,
+        'v42FramingSuggestions'
+      );
+
+      v42EnhanceInput(
+        'v41subject'+i,
+        'v42CharacterSuggestions'
+      );
+
+      v42EnhanceInput(
+        'v41lighting'+i,
+        'v42LightingSuggestions'
+      );
+
+      v42EnhanceInput(
+        'v41style'+i,
+        'v42StyleSuggestions'
+      );
+
+      v42EnhanceInput(
+        'v41duration'+i,
+        'v42DurationSuggestions'
+      );
+
+      v42EnhanceInput(
+        'v41dialogue'+i,
+        'v42AudioSuggestions'
+      );
+
+    });
+
+  }
+
+
+  /* -----------------------------------------------------
+     DIRECTOR'S ASSISTANT NOTICE
+  ----------------------------------------------------- */
+
+  function v42InstallNotice(){
+
+    const output=document.getElementById('v4ShotOutput');
+
+    if(!output)return;
+
+    if(document.getElementById('v42DirectorNotice'))
+      return;
+
+    const notice=document.createElement('div');
+
+    notice.id='v42DirectorNotice';
+
+    notice.className='notice';
+
+    notice.style.marginBottom='14px';
+
+    notice.innerHTML=
+      '<strong>🧠 Director’s Assistant — V4.2</strong><br>'+
+      'Suggestions are starting points, not restrictions. '+
+      'Accept a suggestion, choose another option, or type your own filmmaking decision. '+
+      'You remain the director.';
+
+    output.insertBefore(
+      notice,
+      output.firstChild
+    );
+
+  }
+
+
+  /* -----------------------------------------------------
+     AUTO-REBUILD AFTER USER EDITS
+  ----------------------------------------------------- */
+
+  function v42AttachAutoRebuild(){
+
+    const shots=window.__v4Shots||[];
+
+    shots.forEach((shot,i)=>{
+
+      const fields=[
+
+        'v41type',
+        'v41angle',
+        'v41movement',
+        'v41framing',
+        'v41subject',
+        'v41action',
+        'v41lighting',
+        'v41environment',
+        'v41style',
+        'v41duration',
+        'v41dialogue',
+        'v41continuity'
+
+      ];
+
+      fields.forEach(prefix=>{
+
+        const field=
+          document.getElementById(prefix+i);
+
+        if(!field)return;
+
+        if(field.dataset.v42Watched)return;
+
+        field.dataset.v42Watched='true';
+
+        field.addEventListener(
+          'input',
+          function(){
+
+            if(typeof window.v41RebuildPrompt==='function'){
+
+              window.v41RebuildPrompt(i);
+
+            }
+
+          }
+        );
+
+      });
+
+    });
+
+  }
+
+
+  /* -----------------------------------------------------
+     ENHANCE AFTER V4.1 RENDER
+  ----------------------------------------------------- */
+
+  function v42Enhance(){
+
+    v42InstallSuggestionLists();
+
+    v42InstallCharacterSuggestions();
+
+    v42InstallNotice();
+
+    v42EnhanceShotFields();
+
+    v42AttachAutoRebuild();
+
+  }
+
+
+  /* -----------------------------------------------------
+     WRAP V4.1 RENDER
+  ----------------------------------------------------- */
+
+  if(typeof window.v41RenderShots==='function'){
+
+    const originalRender=
+      window.v41RenderShots;
+
+    window.v41RenderShots=function(){
+
+      originalRender.apply(this,arguments);
+
+      setTimeout(function(){
+
+        v42Enhance();
+
+      },0);
+
+    };
+
+  }
+
+
+  /* -----------------------------------------------------
+     WRAP V4.1 GENERATE
+  ----------------------------------------------------- */
+
+  if(typeof window.v41GenerateShots==='function'){
+
+    const originalGenerate=
+      window.v41GenerateShots;
+
+    window.v41GenerateShots=function(){
+
+      originalGenerate.apply(this,arguments);
+
+      setTimeout(function(){
+
+        v42Enhance();
+
+      },0);
+
+    };
+
+  }
+
+
+  /* -----------------------------------------------------
+     REFRESH CHARACTER SUGGESTIONS
+  ----------------------------------------------------- */
+
+  window.v42RefreshSuggestions=function(){
+
+    const old=
+      document.getElementById('v42CharacterSuggestions');
+
+    if(old)old.remove();
+
+    v42InstallCharacterSuggestions();
+
+    v42Enhance();
+
+  };
+
+
+  /* -----------------------------------------------------
+     INITIALISE V4.2
+  ----------------------------------------------------- */
+
+  function v42Init(){
+
+    v42InstallSuggestionLists();
+
+    v42InstallCharacterSuggestions();
+
+    setTimeout(function(){
+
+      v42Enhance();
+
+    },100);
+
+  }
+
+
+  if(document.readyState==='loading'){
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      v42Init
+    );
+
+  }else{
+
+    v42Init();
+
+  }
+
+})();
+
+</script>
+<!-- V4.2 SHOT DIRECTOR SMART SUGGESTIONS END -->
 </body>
 </html>
