@@ -1,4 +1,4 @@
-const CACHE='my-ai-filmmaker-v3';
+const CACHE='my-ai-filmmaker-v4-3';
 
 const ASSETS=[
   './',
