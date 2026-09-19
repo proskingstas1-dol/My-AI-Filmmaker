@@ -1985,5 +1985,834 @@ function v41InstallPromptBuilder(){
   label.textContent='Choose shot (optional)';
 
   const select=
+
+   <!-- V4.2 SHOT DIRECTOR SMART SUGGESTIONS START -->
+<style>
+.v42-suggestion-note{
+  font-size:12px;
+  opacity:.72;
+  margin-top:4px;
+}
+.v42-field-wrap{
+  position:relative;
+}
+.v42-field-wrap input,
+.v42-field-wrap textarea{
+  width:100%;
+  box-sizing:border-box;
+}
+.v42-choice-icon{
+  margin-left:5px;
+}
+</style>
+
+<script>
+(function(){
+
+  /* =========================================================
+     V4.2 SMART SUGGESTIONS
+     Append-only upgrade.
+     Does NOT delete or replace V3/V4 data.
+     ========================================================= */
+
+  const V42 = {};
+
+  /* ---------- BASIC HELPERS ---------- */
+
+  V42.esc = function(value){
+    return String(value ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#39;");
+  };
+
+  V42.text = function(value){
+    return String(value ?? "").trim();
+  };
+
+  V42.getScene = function(){
+    try{
+      if(typeof v41GetSelectedScene === "function"){
+        return v41GetSelectedScene();
+      }
+    }catch(e){}
+
+    try{
+      if(typeof v4GetScene === "function"){
+        return v4GetScene();
+      }
+    }catch(e){}
+
+    return null;
+  };
+
+  /* ---------- SUGGESTION LIBRARY ---------- */
+
+  V42.suggestions = {
+
+    shotType: [
+      "Establishing Wide Shot",
+      "Wide Shot",
+      "Medium-Wide Shot",
+      "Medium Shot",
+      "Medium Close-Up",
+      "Close-Up",
+      "Extreme Close-Up",
+      "Over-the-Shoulder Shot",
+      "Two-Shot",
+      "POV Shot",
+      "Reaction Shot",
+      "Action Shot",
+      "Detail Insert",
+      "Environmental Shot"
+    ],
+
+    angle: [
+      "Eye Level",
+      "Low Angle",
+      "High Angle",
+      "Overhead Angle",
+      "Bird's-Eye View",
+      "Worm's-Eye View",
+      "Dutch Angle",
+      "Shoulder Level",
+      "POV Angle"
+    ],
+
+    movement: [
+      "Locked-Off / Static",
+      "Slow Push-In",
+      "Slow Pull-Back",
+      "Pan Left",
+      "Pan Right",
+      "Tilt Up",
+      "Tilt Down",
+      "Dolly Forward",
+      "Dolly Backward",
+      "Tracking Shot",
+      "Handheld Movement",
+      "Slow Orbit",
+      "Crane Up",
+      "Crane Down",
+      "Subtle Camera Drift"
+    ],
+
+    framing: [
+      "Extreme Wide",
+      "Wide",
+      "Medium-Wide",
+      "Medium",
+      "Medium Close-Up",
+      "Close-Up",
+      "Extreme Close-Up",
+      "Two-Shot",
+      "Over-the-Shoulder",
+      "POV"
+    ],
+
+    lighting: [
+      "Soft Natural Daylight",
+      "Warm Golden-Hour Light",
+      "Cool Morning Light",
+      "Soft Overcast Light",
+      "Bright Natural Interior Light",
+      "Low-Key Cinematic Lighting",
+      "High-Key Cinematic Lighting",
+      "Dramatic Side Lighting",
+      "Backlighting",
+      "Window Light",
+      "Subtle Practical Lighting",
+      "Moody Ambient Light"
+    ],
+
+    style: [
+      "Photorealistic Cinematic",
+      "Naturalistic Film",
+      "Documentary Realism",
+      "Cinematic Realism",
+      "Grounded Realism",
+      "Warm Cinematic",
+      "Moody Cinematic",
+      "Intimate Cinematic",
+      "Epic Cinematic",
+      "Suspenseful Cinematic",
+      "Soft Dreamlike Cinematic",
+      "Gritty Realistic Cinema",
+      "Clean Modern Cinematic"
+    ],
+
+    duration: [
+      "2–3 seconds",
+      "3–4 seconds",
+      "4–5 seconds",
+      "4–6 seconds",
+      "5–7 seconds",
+      "6–8 seconds",
+      "8–10 seconds",
+      "10–12 seconds"
+    ],
+
+    audio: [
+      "Natural environment ambience",
+      "Room tone and subtle ambience",
+      "Footsteps and natural movement sounds",
+      "Environmental ambience with subtle sound effects",
+      "Dialogue with natural room ambience",
+      "Dialogue with subtle background ambience",
+      "Quiet atmospheric soundscape",
+      "No dialogue; natural ambience only",
+      "No dialogue; cinematic ambient sound"
+    ]
+  };
+
+
+  /* ---------- CHARACTER SUGGESTIONS ---------- */
+
+  V42.characterSuggestions = function(){
+
+    const names = [];
+
+    try{
+      const chars = window.p && Array.isArray(window.p.characters)
+        ? window.p.characters
+        : [];
+
+      chars.forEach(c=>{
+        const name = V42.text(c && c.name);
+        if(name && !names.includes(name)){
+          names.push(name);
+        }
+      });
+    }catch(e){}
+
+    try{
+      const directorCharacter =
+        document.getElementById("directorCharacter");
+
+      const value = V42.text(
+        directorCharacter ? directorCharacter.value : ""
+      );
+
+      if(value && !names.includes(value)){
+        names.push(value);
+      }
+    }catch(e){}
+
+    if(!names.length){
+      names.push("Main character");
+      names.push("Scene subject");
+      names.push("Background character");
+    }
+
+    return names;
+  };
+
+
+  /* ---------- SCENE-AWARE SUGGESTIONS ---------- */
+
+  V42.sceneText = function(scene){
+
+    if(!scene) return "";
+
+    return [
+      scene.title,
+      scene.location,
+      scene.action,
+      scene.camera,
+      scene.lighting,
+      scene.dialogue,
+      scene.audio,
+      scene.description
+    ].map(V42.text).join(" ").toLowerCase();
+  };
+
+
+  V42.getSuggestedEnvironment = function(scene){
+
+    const location = V42.text(scene && scene.location);
+
+    if(location) return location;
+
+    const text = V42.sceneText(scene);
+
+    if(text.includes("classroom")) return "School classroom";
+    if(text.includes("school")) return "School environment";
+    if(text.includes("forest")) return "Dense forest environment";
+    if(text.includes("beach")) return "Open beach environment";
+    if(text.includes("street")) return "Urban street environment";
+    if(text.includes("house")) return "Interior of a house";
+    if(text.includes("room")) return "Interior room";
+    if(text.includes("market")) return "Busy market environment";
+    if(text.includes("hospital")) return "Hospital interior";
+
+    return "Natural scene environment";
+  };
+
+
+  V42.getSuggestedAction = function(scene, shotType){
+
+    const action = V42.text(scene && scene.action);
+
+    if(action){
+
+      if(shotType === "Establishing Wide Shot"){
+        return "Establish the environment and show the scene naturally.";
+      }
+
+      if(shotType === "Detail Insert"){
+        return "Show an important environmental or story detail connected to the scene action.";
+      }
+
+      if(shotType === "Reaction Shot"){
+        return "Capture the subject's natural reaction to the events of the scene.";
+      }
+
+      return action;
+    }
+
+    return "Perform the scene action naturally and realistically.";
+  };
+
+
+  V42.getSuggestedSubject = function(){
+
+    const names = V42.characterSuggestions();
+
+    return names[0] || "Main character";
+  };
+
+
+  V42.getSuggestedContinuity = function(){
+
+    try{
+      if(typeof v41Continuity === "function"){
+        const value = V41safe(v41Continuity());
+        if(value) return value;
+      }
+    }catch(e){}
+
+    try{
+      if(typeof v4Bible === "function"){
+        const value = V41safe(v4Bible());
+        if(value) return value;
+      }
+    }catch(e){}
+
+    return "Maintain all established character appearance, wardrobe, props, location and visual continuity.";
+  };
+
+
+  function V41safe(value){
+    return V42.text(value);
+  }
+
+
+  /* =========================================================
+     CREATE DATALISTS
+     ========================================================= */
+
+  V42.ensureDataLists = function(){
+
+    const old = document.getElementById("v42SmartSuggestionLists");
+
+    if(old) old.remove();
+
+    const container = document.createElement("div");
+    container.id = "v42SmartSuggestionLists";
+
+    function makeList(id, values){
+
+      const list = document.createElement("datalist");
+      list.id = id;
+
+      values.forEach(value=>{
+        const option = document.createElement("option");
+        option.value = value;
+        list.appendChild(option);
+      });
+
+      container.appendChild(list);
+    }
+
+    makeList("v42ShotTypeList", V42.suggestions.shotType);
+    makeList("v42AngleList", V42.suggestions.angle);
+    makeList("v42MovementList", V42.suggestions.movement);
+    makeList("v42FramingList", V42.suggestions.framing);
+    makeList("v42LightingList", V42.suggestions.lighting);
+    makeList("v42StyleList", V42.suggestions.style);
+    makeList("v42DurationList", V42.suggestions.duration);
+    makeList("v42AudioList", V42.suggestions.audio);
+    makeList("v42CharacterList", V42.characterSuggestions());
+
+    document.body.appendChild(container);
+  };
+
+
+  /* =========================================================
+     ADD DATALIST SUPPORT TO SHOT DIRECTOR
+     ========================================================= */
+
+  V42.attachLists = function(){
+
+    const mappings = {
+
+      v41shotType: "v42ShotTypeList",
+      v41angle: "v42AngleList",
+      v41movement: "v42MovementList",
+      v41framing: "v42FramingList",
+      v41subject: "v42CharacterList",
+      v41lighting: "v42LightingList",
+      v41style: "v42StyleList",
+      v41duration: "v42DurationList",
+      v41audio: "v42AudioList"
+    };
+
+    Object.keys(mappings).forEach(id=>{
+
+      const element = document.getElementById(id);
+
+      if(element){
+        element.setAttribute(
+          "list",
+          mappings[id]
+        );
+      }
+
+    });
+
+  };
+
+
+  /* =========================================================
+     AUTO REBUILD PROMPT
+     ========================================================= */
+
+  V42.attachAutoPrompt = function(){
+
+    const panel = document.getElementById("shotDirectorPanel");
+
+    if(!panel) return;
+
+    const fields = panel.querySelectorAll(
+      "input, textarea, select"
+    );
+
+    fields.forEach(field=>{
+
+      if(field.dataset.v42AutoBound === "1"){
+        return;
+      }
+
+      field.dataset.v42AutoBound = "1";
+
+      field.addEventListener("input", function(){
+
+        const card = field.closest(".v41-shot-card");
+
+        if(!card) return;
+
+        const rebuild =
+          card.querySelector("button");
+
+        /* Rebuild using the existing V4.1 system
+           after the user changes a value. */
+
+        try{
+
+          const rebuildButtons =
+            Array.from(card.querySelectorAll("button"));
+
+          const rebuildButton =
+            rebuildButtons.find(btn =>
+              V42.text(btn.textContent)
+                .toLowerCase()
+                .includes("rebuild prompt")
+            );
+
+          if(rebuildButton){
+            rebuildButton.click();
+          }
+
+        }catch(e){}
+
+      });
+
+    });
+
+  };
+
+
+  /* =========================================================
+     MAKE SURE USER'S EDITS ARE INCLUDED BEFORE SAVE/COPY
+     ========================================================= */
+
+  V42.refreshBeforeAction = function(){
+
+    try{
+
+      const panel =
+        document.getElementById("shotDirectorPanel");
+
+      if(!panel) return;
+
+      const cards =
+        panel.querySelectorAll(".v41-shot-card");
+
+      cards.forEach(card=>{
+
+        const buttons =
+          Array.from(card.querySelectorAll("button"));
+
+        const rebuildButton =
+          buttons.find(btn =>
+            V42.text(btn.textContent)
+              .toLowerCase()
+              .includes("rebuild prompt")
+          );
+
+        if(rebuildButton){
+          rebuildButton.click();
+        }
+
+      });
+
+    }catch(e){}
+
+  };
+
+
+  /* =========================================================
+     ADD "SUGGESTED" LABELS
+     ========================================================= */
+
+  V42.addSuggestionLabels = function(){
+
+    const panel =
+      document.getElementById("shotDirectorPanel");
+
+    if(!panel) return;
+
+    const cards =
+      panel.querySelectorAll(".v41-shot-card");
+
+    cards.forEach(card=>{
+
+      if(card.dataset.v42Labels === "1"){
+        return;
+      }
+
+      card.dataset.v42Labels = "1";
+
+      const labels =
+        card.querySelectorAll("label");
+
+      labels.forEach(label=>{
+
+        const text =
+          V42.text(label.textContent).toLowerCase();
+
+        const supported =
+          text.includes("shot type") ||
+          text.includes("camera angle") ||
+          text.includes("camera movement") ||
+          text.includes("framing") ||
+          text.includes("subject") ||
+          text.includes("lighting") ||
+          text.includes("visual style") ||
+          text.includes("duration") ||
+          text.includes("dialogue") ||
+          text.includes("audio");
+
+        if(!supported) return;
+
+        if(
+          label.querySelector(".v42-choice-icon")
+        ){
+          return;
+        }
+
+        const span =
+          document.createElement("span");
+
+        span.className =
+          "v42-choice-icon";
+
+        span.textContent =
+          " • suggestions available";
+
+        span.style.opacity = ".65";
+        span.style.fontSize = "11px";
+
+        label.appendChild(span);
+
+      });
+
+    });
+
+  };
+
+
+  /* =========================================================
+     ADD USER INSTRUCTION
+     ========================================================= */
+
+  V42.addInstruction = function(){
+
+    const panel =
+      document.getElementById("shotDirectorPanel");
+
+    if(!panel) return;
+
+    if(
+      document.getElementById("v42Instruction")
+    ){
+      return;
+    }
+
+    const box =
+      document.createElement("div");
+
+    box.id = "v42Instruction";
+
+    box.style.padding = "12px";
+    box.style.margin = "10px 0";
+    box.style.borderRadius = "10px";
+    box.style.border = "1px solid rgba(127,127,127,.35)";
+    box.style.fontSize = "13px";
+
+    box.innerHTML =
+      "<strong>🎬 Director's Choice</strong><br>" +
+      "The Shot Director gives you a starting suggestion for each " +
+      "filmmaking decision. You can accept it, choose another suggestion, " +
+      "or type your own idea. Your choices will be used in the final shot prompt.";
+
+    panel.insertBefore(
+      box,
+      panel.firstChild
+    );
+
+  };
+
+
+  /* =========================================================
+     WRAP EXISTING RENDER FUNCTION
+     ========================================================= */
+
+  V42.installRenderHook = function(){
+
+    if(
+      typeof window.v41RenderShots !== "function" ||
+      window.v41RenderShots.__v42Wrapped
+    ){
+      return;
+    }
+
+    const original =
+      window.v41RenderShots;
+
+    function wrapped(){
+
+      original.apply(this, arguments);
+
+      setTimeout(function(){
+
+        V42.ensureDataLists();
+        V42.attachLists();
+        V42.addSuggestionLabels();
+        V42.addInstruction();
+        V42.attachAutoPrompt();
+
+      },50);
+
+    }
+
+    wrapped.__v42Wrapped = true;
+
+    window.v41RenderShots = wrapped;
+
+  };
+
+
+  /* =========================================================
+     WRAP SHOT GENERATION
+     ========================================================= */
+
+  V42.installGenerateHook = function(){
+
+    if(
+      typeof window.v4GenerateShots !== "function" ||
+      window.v4GenerateShots.__v42Wrapped
+    ){
+      return;
+    }
+
+    const original =
+      window.v4GenerateShots;
+
+    function wrapped(){
+
+      original.apply(this, arguments);
+
+      setTimeout(function(){
+
+        V42.ensureDataLists();
+        V42.attachLists();
+        V42.addSuggestionLabels();
+        V42.addInstruction();
+        V42.attachAutoPrompt();
+
+      },100);
+
+    }
+
+    wrapped.__v42Wrapped = true;
+
+    window.v4GenerateShots = wrapped;
+
+  };
+
+
+  /* =========================================================
+     WRAP OPEN SHOT DIRECTOR
+     ========================================================= */
+
+  V42.installOpenHook = function(){
+
+    if(
+      typeof window.v4OpenShotDirector !== "function" ||
+      window.v4OpenShotDirector.__v42Wrapped
+    ){
+      return;
+    }
+
+    const original =
+      window.v4OpenShotDirector;
+
+    function wrapped(){
+
+      original.apply(this, arguments);
+
+      setTimeout(function(){
+
+        V42.ensureDataLists();
+        V42.attachLists();
+        V42.addSuggestionLabels();
+        V42.addInstruction();
+        V42.attachAutoPrompt();
+
+      },100);
+
+    }
+
+    wrapped.__v42Wrapped = true;
+
+    window.v4OpenShotDirector = wrapped;
+
+  };
+
+
+  /* =========================================================
+     ENSURE PROMPT IS FRESH WHEN USER COPIES/SAVES/SENDS
+     ========================================================= */
+
+  V42.installActionHooks = function(){
+
+    const panel =
+      document.getElementById("shotDirectorPanel");
+
+    if(!panel) return;
+
+    if(panel.dataset.v42Actions === "1"){
+      return;
+    }
+
+    panel.dataset.v42Actions = "1";
+
+    panel.addEventListener("click", function(event){
+
+      const button =
+        event.target.closest("button");
+
+      if(!button) return;
+
+      const text =
+        V42.text(button.textContent).toLowerCase();
+
+      if(
+        text.includes("copy shot") ||
+        text.includes("copy all") ||
+        text.includes("save shots") ||
+        text.includes("send to prompt builder")
+      ){
+
+        V42.refreshBeforeAction();
+
+      }
+
+    });
+
+  };
+
+
+  /* =========================================================
+     INITIALIZATION
+     ========================================================= */
+
+  V42.init = function(){
+
+    V42.ensureDataLists();
+
+    V42.installRenderHook();
+    V42.installGenerateHook();
+    V42.installOpenHook();
+
+    V42.attachLists();
+    V42.addSuggestionLabels();
+    V42.addInstruction();
+    V42.attachAutoPrompt();
+    V42.installActionHooks();
+
+  };
+
+
+  /* =========================================================
+     RECHECK AFTER EXISTING V4/V4.1 LOADS
+     ========================================================= */
+
+  function startV42(){
+
+    V42.init();
+
+    setTimeout(function(){
+      V42.init();
+    },300);
+
+    setTimeout(function(){
+      V42.init();
+    },1000);
+
+  }
+
+  if(document.readyState === "loading"){
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      startV42
+    );
+
+  }else{
+
+    startV42();
+
+  }
+
+  window.V42ShotDirectorSuggestions = V42;
+
+})();
+</script>
+
+<!-- V4.2 SHOT DIRECTOR SMART SUGGESTIONS END -->
 </body>
 </html>
