@@ -3003,5 +3003,307 @@ if(document.readyState==='loading'){
 
 </script>
 <!-- V4.2 SHOT DIRECTOR SMART SUGGESTIONS END -->
+
+ <!-- SHOT DIRECTOR VISIBILITY REPAIR -->
+<script>
+(function () {
+
+  function installShotDirectorRepair() {
+
+    const nav = document.getElementById('nav');
+    const main = document.querySelector('main');
+
+    if (!nav || !main) return;
+
+    /* Create Shot Director button if missing */
+    let button = document.getElementById('shotDirectorNav');
+
+    if (!button) {
+      button = document.createElement('button');
+      button.id = 'shotDirectorNav';
+      button.dataset.tab = 'shotDirectorPanel';
+      button.textContent = '🎥 Shot Director';
+
+      nav.appendChild(button);
+    }
+
+    /* Create Shot Director panel if missing */
+    let panel = document.getElementById('shotDirectorPanel');
+
+    if (!panel) {
+
+      panel = document.createElement('section');
+
+      panel.id = 'shotDirectorPanel';
+      panel.className = 'panel';
+
+      panel.innerHTML = `
+        <div class="card">
+
+          <h2>🎥 Shot Director</h2>
+
+          <div class="notice">
+            <strong>🧠 Director’s Assistant — V4.2</strong><br>
+            Suggestions are starting points, not restrictions.
+            Accept a suggestion, choose another option, or type
+            your own filmmaking decision. You remain the director.
+          </div>
+
+          <label>Scene</label>
+
+          <select id="repairShotScene"></select>
+
+          <div class="actions">
+
+            <button
+              class="primary"
+              id="repairGenerateShots">
+              🎥 GENERATE SHOTS
+            </button>
+
+            <button
+              id="repairClearShots">
+              Clear Shots
+            </button>
+
+          </div>
+
+          <div id="repairShotOutput"></div>
+
+        </div>
+      `;
+
+      main.appendChild(panel);
+    }
+
+    /* Open Shot Director */
+    function openShotDirector() {
+
+      document
+        .querySelectorAll('nav button')
+        .forEach(function (b) {
+          b.classList.toggle(
+            'active',
+            b.dataset.tab === 'shotDirectorPanel'
+          );
+        });
+
+      document
+        .querySelectorAll('.panel')
+        .forEach(function (p) {
+          p.classList.remove('active');
+        });
+
+      panel.classList.add('active');
+
+      refreshSceneList();
+    }
+
+    button.onclick = openShotDirector;
+
+    /* Refresh available scenes */
+    function refreshSceneList() {
+
+      const select =
+        document.getElementById('repairShotScene');
+
+      if (!select) return;
+
+      let scenes = [];
+
+      /*
+       * Use the existing V3/V4 scene data if available.
+       */
+      try {
+
+        const stored =
+          localStorage.getItem('my_ai_filmmaker_v1');
+
+        if (stored) {
+
+          const data = JSON.parse(stored);
+
+          if (Array.isArray(data.scenes)) {
+            scenes = data.scenes;
+          }
+
+        }
+
+      } catch (error) {
+        console.log(
+          'Shot Director scene refresh:',
+          error
+        );
+      }
+
+      if (!scenes.length) {
+
+        select.innerHTML =
+          '<option value="">No scenes yet</option>';
+
+        return;
+      }
+
+      select.innerHTML = scenes
+        .map(function (scene, index) {
+
+          const name =
+            scene.name ||
+            scene.title ||
+            ('Scene ' + (index + 1));
+
+          return (
+            '<option value="' +
+            index +
+            '">' +
+            (index + 1) +
+            '. ' +
+            name +
+            '</option>'
+          );
+
+        })
+        .join('');
+    }
+
+    /* Generate shots using the existing V4.1 system */
+    const generate =
+      document.getElementById(
+        'repairGenerateShots'
+      );
+
+    if (generate) {
+
+      generate.onclick = function () {
+
+        refreshSceneList();
+
+        /*
+         * IMPORTANT:
+         * We use the existing V4.1 generator.
+         * We are NOT replacing it.
+         */
+
+        if (
+          typeof window.v41GenerateShots ===
+          'function'
+        ) {
+
+          window.v41GenerateShots();
+
+          setTimeout(function () {
+
+            const original =
+              document.getElementById(
+                'v4ShotOutput'
+              );
+
+            const destination =
+              document.getElementById(
+                'repairShotOutput'
+              );
+
+            if (
+              original &&
+              destination
+            ) {
+
+              destination.innerHTML =
+                original.innerHTML;
+
+            }
+
+          }, 100);
+
+          return;
+        }
+
+        /*
+         * Fallback to original V4 generator.
+         */
+
+        if (
+          typeof window.v4GenerateShots ===
+          'function'
+        ) {
+
+          window.v4GenerateShots();
+
+          return;
+        }
+
+        alert(
+          'Shot Director is still loading. Please try again.'
+        );
+      };
+    }
+
+    /* Clear shots */
+    const clear =
+      document.getElementById(
+        'repairClearShots'
+      );
+
+    if (clear) {
+
+      clear.onclick = function () {
+
+        if (
+          typeof window.v41ClearShots ===
+          'function'
+        ) {
+
+          window.v41ClearShots();
+
+        }
+
+        const output =
+          document.getElementById(
+            'repairShotOutput'
+          );
+
+        if (output) {
+          output.innerHTML = '';
+        }
+
+      };
+    }
+
+    refreshSceneList();
+  }
+
+  /*
+   * Run after the existing V4/V4.1/V4.2
+   * scripts have loaded.
+   */
+
+  if (
+    document.readyState ===
+    'loading'
+  ) {
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      installShotDirectorRepair
+    );
+
+  } else {
+
+    installShotDirectorRepair();
+
+  }
+
+  /*
+   * Second attempt gives the existing
+   * Director scripts time to initialise.
+   */
+
+  setTimeout(
+    installShotDirectorRepair,
+    700
+  );
+
+})();
+</script>
 </body>
 </html>
