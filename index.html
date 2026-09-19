@@ -1101,5 +1101,889 @@ v4RefreshScenes();
 })();
 </script>
 <!-- V4 SHOT DIRECTOR END -->
+
+ <!-- V4.1 SHOT DIRECTOR UPGRADE START -->
+<style>
+.v41-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px
+}
+.v41-transfer{
+  background:linear-gradient(135deg,#171e38,#111a31);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px;
+  margin-top:10px
+}
+.v41-status{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:8px
+}
+.v41-shot-meta{
+  font-size:12px;
+  color:var(--muted);
+  margin:5px 0 10px
+}
+.v41-rebuild{
+  width:100%
+}
+@media(min-width:650px){
+  .v41-grid{
+    grid-template-columns:1fr 1fr
+  }
+}
+</style>
+
+<script>
+(function(){
+
+/*
+  V4.1 SHOT DIRECTOR UPGRADE
+
+  This layer intentionally leaves V3 and the original V4 code intact.
+
+  It adds:
+  1. Scene-aware shot planning
+  2. Separate editable Subject / Environment / Visual Style /
+     Dialogue & Audio / Continuity Notes fields
+  3. Automatic generation-ready prompt rebuilding
+  4. Send Shot to Prompt Builder
+  5. Shot selection inside Prompt Builder
+  6. Saved-shot loading
+*/
+
+
+/* ---------------------------------------------------------
+   BASIC HELPERS
+--------------------------------------------------------- */
+
+function v41Esc(x){
+  return String(x??'').replace(/[&<>\"']/g,m=>({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '\"':'&quot;',
+    "'":'&#39;'
+  }[m]));
+}
+
+function v41Text(x){
+  return String(x??'').trim();
+}
+
+function v41GetSelectedScene(){
+
+  const select=document.getElementById('v4SceneSelect');
+
+  if(!select)return null;
+
+  const index=parseInt(select.value,10);
+
+  if(Number.isNaN(index) || !p.scenes[index]){
+    return null;
+  }
+
+  return {
+    index:index,
+    scene:p.scenes[index]
+  };
+}
+
+
+/* ---------------------------------------------------------
+   CHARACTER / SUBJECT HELPERS
+--------------------------------------------------------- */
+
+function v41Subject(){
+
+  if(Array.isArray(p.characters) && p.characters.length){
+
+    return p.characters
+      .map(c=>v41Text(c.name))
+      .filter(Boolean)
+      .join(', ');
+  }
+
+  const directorCharacter=
+    document.getElementById('directorCharacter');
+
+  if(directorCharacter && v41Text(directorCharacter.value)){
+    return v41Text(directorCharacter.value);
+  }
+
+  return 'Main subject of the scene';
+}
+
+
+function v41Bible(){
+
+  if(typeof characterBibleText==='function'){
+    return characterBibleText();
+  }
+
+  if(!p.characters || !p.characters.length){
+    return 'No Character Bible entries yet.';
+  }
+
+  return p.characters.map((c,i)=>`
+CHARACTER ${i+1}: ${c.name||'Unnamed'}
+Role: ${c.role||'Not specified'}
+Appearance: ${c.appearance||'Not specified'}
+Personality / mannerisms: ${c.personality||'Not specified'}
+Voice / dialogue style: ${c.voice||'Not specified'}
+Visual anchors / continuity details: ${c.anchors||'Not specified'}
+Continuity rule: ${c.continuity||'Keep identity and appearance consistent across shots.'}
+`).join('\n');
+}
+
+
+/* ---------------------------------------------------------
+   SCENE-AWARE ANALYSIS
+--------------------------------------------------------- */
+
+function v41AnalyzeScene(s){
+
+  const text=(
+    (s.name||'')+' '+
+    (s.location||'')+' '+
+    (s.action||'')+' '+
+    (s.camera||'')+' '+
+    (s.light||'')+' '+
+    (s.dialogue||'')
+  ).toLowerCase();
+
+  return {
+
+    entry:
+      /\b(enter|enters|entering|walk|walks|walking|arrive|arrives|arrival|come in|comes in)\b/.test(text),
+
+    movement:
+      /\b(run|runs|running|chase|chases|chasing|move|moves|moving|follow|follows|followed|walk|walks|walking)\b/.test(text),
+
+    dialogue:
+      /\b(talk|talks|talking|speak|speaks|speaking|conversation|dialogue|say|says|tell|tells|teacher|voice)\b/.test(text),
+
+    reaction:
+      /\b(look|looks|looking|react|reaction|realize|realizes|discover|discovers|surprise|surprised|shock|shocked|fear|afraid|sad|sadness|happy|angry|anger|confused|confusion)\b/.test(text),
+
+    object:
+      /\b(touch|touches|touching|hold|holds|holding|open|opens|opening|close|closes|pick|picks|take|takes|desk|book|door|bag|phone|letter|key|object)\b/.test(text),
+
+    confrontation:
+      /\b(fight|fights|fighting|argue|argues|argument|confront|confronts|confrontation|conflict|attack|attacks)\b/.test(text),
+
+    reveal:
+      /\b(reveal|reveals|revealing|secret|truth|hidden|find|finds|found|discovery)\b/.test(text),
+
+    quiet:
+      /\b(sit|sits|sitting|wait|waits|waiting|alone|quiet|silence|silent|reflect|reflection)\b/.test(text)
+
+  };
+}
+
+
+/* ---------------------------------------------------------
+   CONTINUITY
+--------------------------------------------------------- */
+
+function v41Continuity(){
+
+  let rule=
+    'Match all previous and following shots. Preserve character identity, facial appearance, hairstyle, clothing, accessories, age range, body language, props, spatial position, screen direction, lighting and time of day.';
+
+  if(p.characters && p.characters.length){
+
+    const characterRules=p.characters
+      .map(c=>v41Text(c.continuity))
+      .filter(Boolean);
+
+    if(characterRules.length){
+      rule+=' Character Bible rules: '+characterRules.join(' | ');
+    }
+  }
+
+  return rule;
+}
+
+
+/* ---------------------------------------------------------
+   VISUAL STYLE
+--------------------------------------------------------- */
+
+function v41DefaultStyle(){
+
+  const style=document.getElementById('directorStyle');
+
+  if(style && v41Text(style.value)){
+    return v41Text(style.value);
+  }
+
+  return 'Photorealistic cinematic';
+}
+
+
+/* ---------------------------------------------------------
+   PROMPT BUILDER FOR EACH SHOT
+--------------------------------------------------------- */
+
+function v41BuildShotPrompt(shot){
+
+  return `
+Create one cinematic AI video shot.
+
+SHOT TYPE:
+${shot.type}
+
+CAMERA ANGLE:
+${shot.angle}
+
+CAMERA MOVEMENT:
+${shot.movement}
+
+FRAMING:
+${shot.framing}
+
+SUBJECT:
+${shot.subject}
+
+ACTION / PERFORMANCE:
+${shot.action}
+
+ENVIRONMENT:
+${shot.environment}
+
+LIGHTING:
+${shot.lighting}
+
+VISUAL STYLE:
+${shot.style}
+
+SHOT DURATION:
+${shot.duration}
+
+DIALOGUE / AUDIO:
+${shot.dialogue}
+
+CONTINUITY NOTES:
+${shot.continuity}
+
+CHARACTER BIBLE:
+${v41Bible()}
+
+GENERATION REQUIREMENTS:
+Photorealistic cinematic imagery, believable human movement, realistic anatomy, natural facial expressions, physically believable camera movement, realistic environment, consistent character identity, consistent wardrobe and visual anchors, coherent spatial geography, natural lighting, cinematic composition, no unnecessary text, no watermark.
+
+IMPORTANT:
+Treat the Character Bible and Continuity Notes as the source of truth. Do not redesign, replace or randomly alter the characters between shots.
+`.trim();
+}
+
+
+/* ---------------------------------------------------------
+   SCENE-AWARE SHOT PLAN
+--------------------------------------------------------- */
+
+function v41MakeShotPlan(s){
+
+  const a=v41AnalyzeScene(s);
+
+  const subject=v41Subject();
+
+  const environment=
+    v41Text(s.location) ||
+    'Environment established by the scene';
+
+  const lighting=
+    v41Text(s.light) ||
+    'Natural cinematic lighting';
+
+  const dialogue=
+    v41Text(s.dialogue) ||
+    'Natural ambient sound; no unnecessary dialogue.';
+
+  const style=v41DefaultStyle();
+
+  const shots=[];
+
+  function add(type,angle,movement,framing,action,duration){
+
+    const shot={
+      type:type,
+      angle:angle,
+      movement:movement,
+      framing:framing,
+      subject:subject,
+      action:action,
+      lighting:lighting,
+      environment:environment,
+      style:style,
+      duration:duration,
+      dialogue:dialogue,
+      continuity:v41Continuity()
+    };
+
+    shot.prompt=v41BuildShotPrompt(shot);
+
+    shots.push(shot);
+  }
+
+
+  /* 1. Establish the world */
+  add(
+    'Establishing Wide Shot',
+    'Eye level',
+    'Slow controlled push-in',
+    'Wide frame showing the environment and subject',
+    `Establish ${environment}. Show the spatial layout before the main action begins.`
+      +' Scene action: '+(s.action||'begin the scene naturally.'),
+    '4–6 seconds'
+  );
+
+
+  /* 2. Movement / entry */
+  if(a.entry || a.movement){
+
+    add(
+      'Tracking Shot',
+      'Eye level',
+      'Smooth tracking movement following the subject',
+      'Medium-wide frame keeping the subject and environment visible',
+      `Follow ${subject} as they move through ${environment}. Preserve natural walking or movement and screen direction.`,
+      '4–6 seconds'
+    );
+
+  }else{
+
+    add(
+      'Medium Shot',
+      'Eye level',
+      'Subtle controlled camera movement',
+      'Medium framing focused on the subject',
+      `Introduce ${subject} clearly and show the beginning of the scene action: ${s.action||'perform the scene action naturally.'}`,
+      '4–6 seconds'
+    );
+
+  }
+
+
+  /* 3. Dialogue / interaction */
+  if(a.dialogue){
+
+    add(
+      'Over-the-Shoulder Dialogue Shot',
+      'Slightly above shoulder level',
+      'Very subtle natural camera adjustment',
+      'Over-the-shoulder framing connecting the speaking characters',
+      `Show ${subject} during the conversation. Capture believable listening, speaking and reaction behavior.`,
+      '3–5 seconds'
+    );
+
+  }else if(a.reaction || a.reveal){
+
+    add(
+      'Point-of-View / Over-the-Shoulder Shot',
+      'Natural eye-line angle',
+      'Slow deliberate push toward the viewed subject',
+      'Over-the-shoulder or POV composition',
+      `Show what ${subject} is seeing or discovering. Make the visual information clear and story-relevant.`,
+      '3–5 seconds'
+    );
+
+  }else{
+
+    add(
+      'Medium Character Shot',
+      'Eye level',
+      'Subtle tracking or push-in',
+      'Medium framing',
+      `Show ${subject} performing the central scene action naturally: ${s.action||'continue the scene action.'}`,
+      '4–6 seconds'
+    );
+
+  }
+
+
+  /* 4. Reaction / emotion */
+  if(a.reaction || a.dialogue || a.reveal){
+
+    add(
+      'Close-Up Reaction Shot',
+      'Eye level',
+      'Locked-off camera with an extremely subtle push-in',
+      'Close framing on the subject’s face',
+      `Capture ${subject}'s natural reaction to the scene events. Keep facial identity and expression believable and consistent.`,
+      '3–4 seconds'
+    );
+
+  }
+
+
+  /* 5. Action */
+  if(a.confrontation || a.movement){
+
+    add(
+      'Dynamic Action Shot',
+      'Natural cinematic angle',
+      'Controlled tracking, pan or short handheld movement',
+      'Medium-wide framing that clearly shows the action',
+      `Show the main physical action clearly and safely. Maintain spatial continuity and believable movement.`,
+      '4–6 seconds'
+    );
+
+  }
+
+
+  /* 6. Important object / detail */
+  if(a.object || a.reveal){
+
+    add(
+      'Detail Insert Shot',
+      'Close detail angle',
+      'Minimal controlled movement',
+      'Tight close-up of the important object or interaction',
+      `Show the important visual detail connected to the scene: ${s.action||'the key object or environmental detail.'}`,
+      '2–4 seconds'
+    );
+
+  }else{
+
+    add(
+      'Environmental Detail Shot',
+      'Close detail angle',
+      'Very slow controlled movement',
+      'Tight detail framing',
+      `Show a meaningful detail of ${environment} that reinforces the story and connects naturally to the surrounding shots.`,
+      '2–4 seconds'
+    );
+
+  }
+
+
+  /* 7. Closing shot */
+  if(a.quiet){
+
+    add(
+      'Quiet Closing Shot',
+      'Eye level',
+      'Slow pull-back',
+      'Medium-wide composition',
+      `End the scene with ${subject} in the environment, allowing the emotional or narrative moment to settle naturally.`,
+      '4–6 seconds'
+    );
+
+  }else{
+
+    add(
+      'Reaction / Closing Shot',
+      'Eye level',
+      'Slow pull-back',
+      'Medium or wide closing composition',
+      `End the scene with ${subject}'s reaction and a clear visual transition toward what happens next.`,
+      '4–6 seconds'
+    );
+
+  }
+
+
+  return shots;
+}
+
+
+/* ---------------------------------------------------------
+   COLLECT CURRENTLY EDITED SHOTS
+--------------------------------------------------------- */
+
+function v41CollectShots(){
+
+  const shots=window.__v4Shots||[];
+
+  return shots.map((shot,i)=>{
+
+    const get=id=>{
+      const el=document.getElementById(id+i);
+      return el ? el.value : '';
+    };
+
+    const updated={
+      ...shot,
+
+      type:get('v41type'),
+      angle:get('v41angle'),
+      movement:get('v41movement'),
+      framing:get('v41framing'),
+      subject:get('v41subject'),
+      action:get('v41action'),
+      lighting:get('v41lighting'),
+      environment:get('v41environment'),
+      style:get('v41style'),
+      duration:get('v41duration'),
+      dialogue:get('v41dialogue'),
+      continuity:get('v41continuity'),
+      prompt:get('v41prompt')
+    };
+
+    return updated;
+  });
+}
+
+
+/* ---------------------------------------------------------
+   REBUILD ONE PROMPT
+--------------------------------------------------------- */
+
+window.v41RebuildPrompt=function(i){
+
+  const shots=window.__v4Shots||[];
+
+  if(!shots[i])return;
+
+  const get=id=>{
+    const el=document.getElementById(id+i);
+    return el ? el.value : '';
+  };
+
+  const shot={
+    ...shots[i],
+
+    type:get('v41type'),
+    angle:get('v41angle'),
+    movement:get('v41movement'),
+    framing:get('v41framing'),
+    subject:get('v41subject'),
+    action:get('v41action'),
+    lighting:get('v41lighting'),
+    environment:get('v41environment'),
+    style:get('v41style'),
+    duration:get('v41duration'),
+    dialogue:get('v41dialogue'),
+    continuity:get('v41continuity')
+  };
+
+  shot.prompt=v41BuildShotPrompt(shot);
+
+  shots[i]=shot;
+
+  const prompt=document.getElementById('v41prompt'+i);
+
+  if(prompt){
+    prompt.value=shot.prompt;
+  }
+};
+
+
+/* ---------------------------------------------------------
+   RENDER UPGRADED SHOTS
+--------------------------------------------------------- */
+
+function v41RenderShots(){
+
+  const shots=window.__v4Shots||[];
+
+  const box=document.getElementById('v4Shots');
+
+  if(!box)return;
+
+  document.getElementById('v4ShotOutput').style.display=
+    shots.length?'block':'none';
+
+  box.innerHTML=shots.map((shot,i)=>`
+
+    <div class="shot-card">
+
+      <span class="shot-number">
+        SHOT ${i+1}
+      </span>
+
+      <h3>${v41Esc(shot.type)}</h3>
+
+      <div class="v41-shot-meta">
+        Scene-aware shot ${i+1} of ${shots.length}
+      </div>
+
+      <div class="v41-grid">
+
+        <div>
+          <label>Shot type</label>
+          <input
+            id="v41type${i}"
+            value="${v41Esc(shot.type)}"
+          >
+        </div>
+
+        <div>
+          <label>Camera angle</label>
+          <input
+            id="v41angle${i}"
+            value="${v41Esc(shot.angle)}"
+          >
+        </div>
+
+        <div>
+          <label>Camera movement</label>
+          <input
+            id="v41movement${i}"
+            value="${v41Esc(shot.movement)}"
+          >
+        </div>
+
+        <div>
+          <label>Framing</label>
+          <input
+            id="v41framing${i}"
+            value="${v41Esc(shot.framing)}"
+          >
+        </div>
+
+        <div>
+          <label>Subject</label>
+          <input
+            id="v41subject${i}"
+            value="${v41Esc(shot.subject)}"
+          >
+        </div>
+
+        <div>
+          <label>Environment</label>
+          <input
+            id="v41environment${i}"
+            value="${v41Esc(shot.environment)}"
+          >
+        </div>
+
+        <div>
+          <label>Visual style</label>
+          <input
+            id="v41style${i}"
+            value="${v41Esc(shot.style)}"
+          >
+        </div>
+
+        <div>
+          <label>Shot duration</label>
+          <input
+            id="v41duration${i}"
+            value="${v41Esc(shot.duration)}"
+          >
+        </div>
+
+      </div>
+
+      <label>Action / performance</label>
+      <textarea id="v41action${i}">${v41Esc(shot.action)}</textarea>
+
+      <label>Lighting</label>
+      <textarea id="v41lighting${i}">${v41Esc(shot.lighting)}</textarea>
+
+      <label>Dialogue / audio</label>
+      <textarea id="v41dialogue${i}">${v41Esc(shot.dialogue)}</textarea>
+
+      <label>Continuity notes</label>
+      <textarea id="v41continuity${i}">${v41Esc(shot.continuity)}</textarea>
+
+      <label>Generation-ready shot prompt</label>
+      <textarea
+        id="v41prompt${i}"
+        class="shot-prompt"
+      >${v41Esc(shot.prompt)}</textarea>
+
+      <div class="shot-actions">
+
+        <button
+          class="secondary"
+          onclick="v41RebuildPrompt(${i})"
+        >
+          🔄 Rebuild Prompt
+        </button>
+
+        <button
+          class="secondary"
+          onclick="v41CopyShot(${i})"
+        >
+          📋 Copy Shot
+        </button>
+
+        <button
+          class="primary"
+          onclick="v41SendShotToPromptBuilder(${i})"
+        >
+          ↪️ Send to Prompt Builder
+        </button>
+
+      </div>
+
+    </div>
+
+  `).join('');
+
+}
+
+
+/* ---------------------------------------------------------
+   SAVE UPGRADED SHOTS
+--------------------------------------------------------- */
+
+window.v41SaveShots=function(){
+
+  const selected=v41GetSelectedScene();
+
+  if(!selected){
+    toast('Select a scene first');
+    return;
+  }
+
+  const shots=v41CollectShots();
+
+  p.scenes[selected.index].shots=shots;
+
+  save();
+
+  window.__v4Shots=shots;
+
+  toast('V4.1 shots saved');
+
+};
+
+
+/* ---------------------------------------------------------
+   COPY UPGRADED SHOT
+--------------------------------------------------------- */
+
+window.v41CopyShot=function(i){
+
+  const shots=v41CollectShots();
+
+  if(!shots[i]){
+    toast('Shot not found');
+    return;
+  }
+
+  navigator.clipboard.writeText(
+    shots[i].prompt
+  ).then(
+    ()=>toast('Shot prompt copied')
+  ).catch(
+    ()=>{
+      const temp=document.createElement('textarea');
+      temp.value=shots[i].prompt;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      temp.remove();
+      toast('Shot prompt copied');
+    }
+  );
+
+};
+
+
+/* ---------------------------------------------------------
+   COPY ALL
+--------------------------------------------------------- */
+
+window.v41CopyAllShots=function(){
+
+  const shots=v41CollectShots();
+
+  if(!shots.length){
+    toast('Generate shots first');
+    return;
+  }
+
+  const all=shots.map((s,i)=>
+    `SHOT ${i+1}\n\n${s.prompt}`
+  ).join('\n\n--------------------\n\n');
+
+  navigator.clipboard.writeText(all)
+    .then(()=>toast('All shots copied'))
+    .catch(()=>toast('Copy unavailable'));
+
+};
+
+
+/* ---------------------------------------------------------
+   SEND ONE SHOT TO PROMPT BUILDER
+--------------------------------------------------------- */
+
+window.v41SendShotToPromptBuilder=function(i){
+
+  const selected=v41GetSelectedScene();
+
+  if(!selected){
+    toast('Select a scene first');
+    return;
+  }
+
+  const shots=v41CollectShots();
+
+  if(!shots[i]){
+    toast('Shot not found');
+    return;
+  }
+
+  p.scenes[selected.index].shots=shots;
+
+  save();
+
+  window.__v4Shots=shots;
+
+  window.__v41PromptTarget={
+    sceneIndex:selected.index,
+    shotIndex:i
+  };
+
+  /*
+    Open the existing Prompt Builder first.
+    Then explicitly select this shot afterwards.
+  */
+  if(typeof openTab==='function'){
+    openTab('prompts');
+  }
+
+  setTimeout(function(){
+
+    v41RefreshPromptShots();
+
+    const sceneSelect=document.getElementById('sceneSelect');
+
+    if(sceneSelect){
+      sceneSelect.value=String(selected.index);
+    }
+
+    const shotSelect=
+      document.getElementById('v41PromptShotSelect');
+
+    if(shotSelect){
+      shotSelect.value=String(i);
+    }
+
+    v41BuildPromptFromSelection();
+
+    toast('Shot sent to Prompt Builder');
+
+  },50);
+
+};
+
+
+/* ---------------------------------------------------------
+   PROMPT BUILDER SHOT SELECTOR
+--------------------------------------------------------- */
+
+function v41InstallPromptBuilder(){
+
+  const sceneSelect=document.getElementById('sceneSelect');
+
+  if(!sceneSelect)return;
+
+  if(document.getElementById('v41PromptShotSelect'))return;
+
+  const label=document.createElement('label');
+
+  label.id='v41PromptShotLabel';
+  label.textContent='Choose shot (optional)';
+
+  const select=
 </body>
 </html>
