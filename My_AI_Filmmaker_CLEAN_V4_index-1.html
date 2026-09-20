@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>My AI Filmmaker</title>
+<style>
+:root{--bg:#0b1020;--card:#141b2f;--card2:#1b2440;--text:#f5f7ff;--muted:#aab3c7;--accent:#7c5cff;--line:#2b3550}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0b1020,#10162a);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{padding:22px 18px 14px;position:sticky;top:0;background:rgba(11,16,32,.94);backdrop-filter:blur(12px);z-index:5;border-bottom:1px solid var(--line)}
+h1{font-size:24px;margin:0 0 4px}.sub,.small{color:var(--muted);font-size:13px}
+nav{display:flex;gap:7px;overflow:auto;padding:10px 14px;background:#0b1020;position:sticky;top:79px;z-index:4}
+nav button{white-space:nowrap;border:1px solid var(--line);background:var(--card);color:var(--muted);padding:9px 12px;border-radius:999px}
+nav button.active{background:var(--accent);color:white;border-color:transparent}
+main{padding:16px;max-width:760px;margin:auto}.panel{display:none}.panel.active{display:block}
+.card{background:rgba(20,27,47,.95);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 8px 30px #0002}
+h2{font-size:19px;margin:0 0 12px}h3{font-size:15px;margin:14px 0 8px}
+label{display:block;color:var(--muted);font-size:12px;margin:10px 0 5px}
+input,textarea,select{width:100%;background:#0d1426;color:var(--text);border:1px solid var(--line);border-radius:11px;padding:11px;font:inherit;outline:none}
+textarea{min-height:100px;resize:vertical}.primary{background:var(--accent);border:0;color:white;padding:11px 15px;border-radius:11px;font-weight:700}
+.secondary{background:var(--card2);border:1px solid var(--line);color:white;padding:10px 13px;border-radius:11px}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}.item,.result{border:1px solid var(--line);border-radius:13px;padding:12px;margin:8px 0;background:#10182c}
+.item strong{display:block}.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#243052;color:#cbd3ea;font-size:11px;margin:3px}
+.empty{padding:18px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:13px}
+footer{color:var(--muted);font-size:11px;text-align:center;padding:30px 10px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#fff;color:#111;padding:10px 14px;border-radius:999px;display:none;z-index:20;box-shadow:0 8px 30px #0006}
+.director-hero{padding:18px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(135deg,#171e38,#10182c);margin-bottom:14px}
+.notice{font-size:12px;color:var(--muted);padding:10px;border-left:3px solid var(--accent);background:#111a31;border-radius:8px}
+.step{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #222d48}.step span{min-width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#243052;font-weight:700}
+.result h3{margin:0 0 6px}.bible{border:1px solid var(--line);border-radius:13px;padding:12px;margin:8px 0;background:#111a31}
+</style>
+</head>
+<body>
+<header><h1>🎬 My AI Filmmaker</h1><div class="sub">Your private mobile movie-planning studio • works offline</div></header>
+<nav id="nav">
+<button class="active" data-tab="dashboard">Home</button><button data-tab="story">Story</button><button data-tab="characters">Characters</button><button data-tab="scenes">Scenes</button><button data-tab="prompts">Prompts</button><button data-tab="assets">Assets</button><button data-tab="project">Project</button><button data-tab="director">🧠 AI Director</button><button data-tab="shotDirector">🎥 Shot Director</button>
+</nav>
+<main>
+
+<section id="dashboard" class="panel active">
+<div class="card"><h2>Start your film</h2>
+<label>Movie title</label><input id="title" placeholder="e.g. The Last Desk">
+<label>One-line idea</label><textarea id="idea" placeholder="Describe your movie idea..."></textarea>
+<div class="row"><button class="primary" onclick="saveBasics()">Save project</button><button class="secondary" onclick="demo()">Load example</button></div>
+</div>
+<div class="card"><h2>Production pipeline</h2>
+<div class="item">✍️ <strong>1. Story</strong><span class="small">Build your plot and screenplay.</span></div>
+<div class="item">👤 <strong>2. Characters</strong><span class="small">Build a Character Bible and keep identity details consistent.</span></div>
+<div class="item">🎞️ <strong>3. Scenes</strong><span class="small">Plan shots, locations, actions and dialogue.</span></div>
+<div class="item">🤖 <strong>4. AI prompts</strong><span class="small">Generate ready-to-paste prompts.</span></div>
+<div class="item">📦 <strong>5. Assets & project</strong><span class="small">Keep your files and export your project plan.</span></div>
+</div>
+</section>
+
+<section id="story" class="panel"><div class="card"><h2>✍️ Story & screenplay</h2>
+<label>Logline</label><textarea id="logline"></textarea><label>Beginning</label><textarea id="beginning"></textarea>
+<label>Middle / conflict</label><textarea id="middle"></textarea><label>Climax</label><textarea id="climax"></textarea>
+<label>Ending</label><textarea id="ending"></textarea><label>Full screenplay / narration</label><textarea id="screenplay"></textarea>
+<button class="primary" onclick="saveStory()">Save story</button></div></section>
+
+<section id="characters" class="panel"><div class="card"><h2>👤 Character Bible & Consistency</h2>
+<p class="small">V3 keeps the character's identity, visual anchors and continuity rules together so later prompts can reuse the same details.</p>
+<label>Name</label><input id="cname">
+<label>Role</label><input id="crole">
+<label>Appearance</label><textarea id="cappearance"></textarea>
+<label>Personality / mannerisms</label><textarea id="cpersonality"></textarea>
+<label>Voice / dialogue style</label><textarea id="cvoice"></textarea>
+<label>Visual anchors / continuity details</label><textarea id="canchors" placeholder="Details that should stay recognizable: hairstyle, clothing, accessories, age range, facial features, colors, body language, etc."></textarea>
+<label>Continuity rule</label><textarea id="crule" placeholder="What must remain consistent from shot to shot?"></textarea>
+<button class="primary" onclick="addCharacter()">Add character</button>
+<div class="notice" style="margin-top:12px">Character Bible details are stored locally with your project and are automatically included in V3 master prompts.</div>
+<div id="characterList"></div>
+</div></section>
+
+<section id="scenes" class="panel"><div class="card"><h2>🎞️ Scenes & shots</h2>
+<label>Scene number / title</label><input id="sname"><label>Location</label><input id="slocation">
+<label>Action</label><textarea id="saction"></textarea><label>Camera</label><input id="scamera">
+<label>Lighting / mood</label><input id="slight"><label>Dialogue / audio</label><textarea id="sdialogue"></textarea>
+<button class="primary" onclick="addScene()">Add scene</button><div id="sceneList"></div>
+</div></section>
+
+<section id="prompts" class="panel"><div class="card"><h2>🤖 Prompt builder</h2>
+<p class="small">Build a consistent prompt for an external image/video model. This app does not secretly send anything anywhere.</p>
+<label>Choose scene</label><select id="sceneSelect" onchange="buildPrompt()"></select>
+<label>Generated prompt</label><textarea id="promptOut" style="min-height:260px"></textarea>
+<div class="row"><button class="primary" onclick="buildPrompt()">Build prompt</button><button class="secondary" onclick="copyText('promptOut')">Copy</button></div>
+</div></section>
+
+<section id="assets" class="panel"><div class="card"><h2>📦 Assets</h2>
+<label>Asset name</label><input id="aname"><label>Type</label><select id="atype"><option>Image</option><option>Video</option><option>Audio</option><option>Other</option></select>
+<label>Notes / local file location</label><textarea id="anotes"></textarea><button class="primary" onclick="addAsset()">Add asset</button><div id="assetList"></div>
+</div></section>
+
+<section id="project" class="panel"><div class="card"><h2>💾 Project backup</h2>
+<p class="small">Everything you enter is stored locally in this browser.</p>
+<div class="row"><button class="primary" onclick="exportProject()">Export project</button><button class="secondary" onclick="document.getElementById('importFile').click()">Import project</button></div>
+<input type="file" id="importFile" accept=".json" hidden onchange="importProject(event)">
+<h3>Reset</h3><button class="secondary" onclick="resetProject()">Clear this project</button>
+</div>
+<div class="card"><h2>About this version</h2><p class="small">Version 3 keeps the existing filmmaking workspace and adds a Character Bible + Character Consistency layer to the Director and prompt builder. It does not generate AI video by itself.</p></div>
+</section>
+
+<section id="director" class="panel">
+<div class="director-hero"><h2>🧠 AI Director — V3</h2><div class="small">Turn one film idea into a connected production plan with a reusable Character Bible.</div></div>
+<div class="card"><h2>🎬 Build your film</h2>
+<label>Film idea</label><textarea id="directorIdea" placeholder="Tell the Director what your movie is about..."></textarea>
+<label>Genre</label><select id="directorGenre"><option>Drama</option><option>Action</option><option>Adventure</option><option>Comedy</option><option>Science Fiction</option><option>Fantasy</option><option>Mystery</option><option>Thriller</option><option>Documentary</option><option>Coming-of-age</option></select>
+<label>Visual style</label><select id="directorStyle"><option>Photorealistic cinematic</option><option>Natural documentary</option><option>Stylized cinematic</option><option>Dark atmospheric</option><option>Bright uplifting</option><option>Epic cinematic</option><option>Handheld realistic</option></select>
+<label>Film length</label><select id="directorLength"><option>Short (2–5 minutes)</option><option>Short (5–10 minutes)</option><option>Medium (10–20 minutes)</option><option>Long (20–40 minutes)</option></select>
+<label>Number of scenes</label><select id="directorScenes"><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="8">8</option><option value="10">10</option></select>
+<label>Story tone</label><select id="directorTone"><option>Hopeful</option><option>Emotional</option><option>Suspenseful</option><option>Funny</option><option>Serious</option><option>Inspirational</option><option>Dark</option><option>Epic</option></select>
+<label>Main character</label><input id="directorCharacter" placeholder="e.g. Kofi, a determined student">
+<div class="row" style="margin-top:12px"><button class="primary" onclick="runDirector()">🎬 BUILD MY FILM</button><button class="secondary" onclick="useProjectIdea()">Use project idea</button></div>
+<div class="notice" style="margin-top:12px">V3 automatically uses your saved Character Bible in the Director's continuity prompt. This Director is still a local planning engine; it does not send your idea to an online AI service.</div>
+</div>
+
+<div id="directorOutput" class="card" style="display:none">
+<h2>🎥 Director's production plan</h2><div id="directorSummary"></div>
+<h3>Character Bible used</h3><div id="directorBible"></div>
+<h3>Director workflow</h3><div id="directorSteps"></div>
+<h3>Master generation prompt</h3><textarea id="masterPrompt" style="min-height:300px"></textarea>
+<div class="row"><button class="primary" onclick="sendDirectorToV1()">↪️ Send to workspace</button><button class="secondary" onclick="copyText('masterPrompt')">Copy master prompt</button></div>
+<div class="row" style="margin-top:8px"><button class="secondary" onclick="openTab('story')">Open Story</button><button class="secondary" onclick="openTab('characters')">Open Characters</button><button class="secondary" onclick="openTab('scenes')">Open Scenes</button><button class="secondary" onclick="openTab('prompts')">Open Prompts</button></div>
+</div>
+</section>
+
+
+<section id="shotDirector" class="panel">
+<div class="director-hero"><h2>🎥 Shot Director — V4</h2><div class="small">Turn each scene into connected, editable cinematic shots while preserving your Character Bible.</div></div>
+<div class="card">
+<h2>🎬 Build the scene's shot plan</h2>
+<label>Select scene</label><select id="v4SceneSelect"></select>
+<div class="row" style="margin-top:12px"><button class="primary" onclick="v4GenerateShots()">🎥 GENERATE SHOTS</button><button class="secondary" onclick="v4ClearShots()">Clear</button></div>
+<div class="notice" style="margin-top:12px">The Director suggests starting points. You remain in control and can edit every shot before sending it to the Prompt Builder.</div>
+</div>
+<div id="v4SceneInfo" class="card" style="display:none"><h2>📋 Scene information</h2><div id="v4SceneSummary"></div></div>
+<div id="v4ShotOutput" class="card" style="display:none"><h2>🎞️ Shot list</h2><div id="v4Shots"></div><div class="row" style="margin-top:14px"><button class="primary" onclick="v4SaveShots()">💾 Save Shots</button><button class="secondary" onclick="v4CopyAllShots()">📋 Copy All</button></div></div>
+</section>
+</main>
+<footer>My AI Filmmaker • V3 personal prototype • Your data stays in your browser unless you export/share it.</footer>
+<div id="toast"></div>
+
+<script>
+const K='my_ai_filmmaker_v1';
+let p=JSON.parse(localStorage.getItem(K)||'{"title":"","idea":"","story":{},"characters":[],"scenes":[],"assets":[]}');
+
+const $=id=>document.getElementById(id);
+
+function save(){localStorage.setItem(K,JSON.stringify(p))}
+function toast(t){$('toast').textContent=t;$('toast').style.display='block';clearTimeout(window.__toast);window.__toast=setTimeout(()=>$('toast').style.display='none',1800)}
+function esc(x){return String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+
+function openTab(tab){
+ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+ document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+ $(tab).classList.add('active');
+ if(tab==='prompts')refreshScenes();
+ if(tab==='director')renderDirectorBible();
+ if(tab==='shotDirector')v4RefreshScenes();
+}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>openTab(b.dataset.tab));
+
+function saveBasics(){p.title=$('title').value;p.idea=$('idea').value;save();toast('Project saved')}
+function saveStory(){p.story={logline:$('logline').value,beginning:$('beginning').value,middle:$('middle').value,climax:$('climax').value,ending:$('ending').value,screenplay:$('screenplay').value};save();toast('Story saved')}
+
+function addCharacter(){
+ let c={
+  name:$('cname').value,role:$('crole').value,appearance:$('cappearance').value,
+  personality:$('cpersonality').value,voice:$('cvoice').value,
+  anchors:$('canchors').value,continuity:$('crule').value
+ };
+ if(!c.name)return toast('Add a name');
+ p.characters.push(c);
+ ['cname','crole','cappearance','cpersonality','cvoice','canchors','crule'].forEach(x=>$(x).value='');
+ save();renderCharacters();renderDirectorBible();toast('Character added')
+}
+
+function renderCharacters(){
+ $('characterList').innerHTML=p.characters.length?p.characters.map((c,i)=>`
+ <div class="item">
+  <strong>${esc(c.name)} <span class="badge">${esc(c.role||'Character')}</span></strong>
+  <div class="small"><b>Appearance:</b> ${esc(c.appearance)}</div>
+  <div class="small"><b>Personality:</b> ${esc(c.personality)}</div>
+  <div class="small"><b>Voice:</b> ${esc(c.voice)}</div>
+  ${c.anchors?`<div class="small"><b>Visual anchors:</b> ${esc(c.anchors)}</div>`:''}
+  ${c.continuity?`<div class="small"><b>Continuity:</b> ${esc(c.continuity)}</div>`:''}
+  <button class="secondary" onclick="delChar(${i})">Delete</button>
+ </div>`).join(''):'<div class="empty">No characters yet.</div>'
+}
+
+function delChar(i){p.characters.splice(i,1);save();renderCharacters();renderDirectorBible()}
+
+function characterBibleText(){
+ if(!p.characters.length)return 'No saved characters yet. The Director will use the main-character description only.';
+ return p.characters.map((c,i)=>`
+CHARACTER ${i+1}: ${c.name}
+Role: ${c.role||'Not specified'}
+Appearance: ${c.appearance||'Not specified'}
+Personality / mannerisms: ${c.personality||'Not specified'}
+Voice / dialogue style: ${c.voice||'Not specified'}
+Visual anchors / continuity details: ${c.anchors||'Not specified'}
+Continuity rule: ${c.continuity||'Keep identity, appearance, clothing, accessories, mannerisms and voice consistent across shots.'}
+`).join('\n')
+}
+
+function renderDirectorBible(){
+ const box=$('directorBible');
+ if(!box)return;
+ if(!p.characters.length){
+  box.innerHTML='<div class="empty">No Character Bible entries yet. Add characters in Characters first, then run the Director.</div>';
+  return;
+ }
+ box.innerHTML=p.characters.map(c=>`
+ <div class="bible">
+  <strong>${esc(c.name)}</strong>
+  <div class="small">${esc(c.role||'Character')}</div>
+  <div class="small"><b>Appearance:</b> ${esc(c.appearance||'—')}</div>
+  <div class="small"><b>Visual anchors:</b> ${esc(c.anchors||'—')}</div>
+  <div class="small"><b>Continuity rule:</b> ${esc(c.continuity||'Keep identity and appearance consistent.')}</div>
+ </div>`).join('')
+}
+
+function addScene(){
+ let s={name:$('sname').value,location:$('slocation').value,action:$('saction').value,camera:$('scamera').value,light:$('slight').value,dialogue:$('sdialogue').value};
+ if(!s.name)return toast('Add a scene title');
+ p.scenes.push(s);['sname','slocation','saction','scamera','slight','sdialogue'].forEach(x=>$(x).value='');
+ save();renderScenes();toast('Scene added')
+}
+
+function renderScenes(){
+ $('sceneList').innerHTML=p.scenes.length?p.scenes.map((s,i)=>`
+ <div class="item"><strong>${esc(s.name)}</strong><span class="badge">${esc(s.location)}</span>
+ <p class="small">${esc(s.action)}</p><p class="small">Camera: ${esc(s.camera)} • ${esc(s.light)}</p>
+ <button class="secondary" onclick="delScene(${i})">Delete</button></div>`).join(''):'<div class="empty">No scenes yet.</div>'
+}
+
+function delScene(i){p.scenes.splice(i,1);save();renderScenes();refreshScenes()}
+
+function refreshScenes(){
+ $('sceneSelect').innerHTML=p.scenes.map((s,i)=>`<option value="${i}">${i+1}. ${esc(s.name)}</option>`).join('')||'<option>No scenes</option>';
+ buildPrompt()
+}
+
+function buildPrompt(){
+ if(!p.scenes.length){$('promptOut').value='Add a scene first.';return}
+ let s=p.scenes[+$('sceneSelect').value]||p.scenes[0];
+ $('promptOut').value=`Cinematic AI video shot for "${p.title||'my film'}".
+
+SCENE: ${s.name}
+LOCATION: ${s.location}
+ACTION: ${s.action}
+CAMERA: ${s.camera}
+LIGHTING/MOOD: ${s.light}
+DIALOGUE/AUDIO: ${s.dialogue}
+
+CHARACTER BIBLE:
+${characterBibleText()}
+
+VISUAL DIRECTION:
+Photorealistic, natural human motion, consistent character identity and clothing, believable environment, coherent anatomy, cinematic composition, realistic lighting, no text or watermark. Preserve continuity with previous shots.`
+}
+
+async function copyText(id){
+ try{await navigator.clipboard.writeText($(id).value);toast('Copied')}
+ catch{$(id).select();document.execCommand('copy');toast('Copied')}
+}
+
+function addAsset(){
+ let a={name:$('aname').value,type:$('atype').value,notes:$('anotes').value};
+ if(!a.name)return toast('Add an asset name');
+ p.assets.push(a);$('aname').value='';$('anotes').value='';save();renderAssets();toast('Asset added')
+}
+function renderAssets(){
+ $('assetList').innerHTML=p.assets.length?p.assets.map((a,i)=>`
+ <div class="item"><strong>${esc(a.name)} <span class="badge">${esc(a.type)}</span></strong>
+ <div class="small">${esc(a.notes)}</div><button class="secondary" onclick="delAsset(${i})">Delete</button></div>`).join(''):'<div class="empty">No assets yet.</div>'
+}
+function delAsset(i){p.assets.splice(i,1);save();renderAssets()}
+
+function exportProject(){
+ let blob=new Blob([JSON.stringify(p,null,2)],{type:'application/json'}),a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);a.download=(p.title||'my-ai-film-project').replace(/[^a-z0-9_-]/gi,'_')+'.json';a.click();
+ setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Backup exported')
+}
+
+function importProject(e){
+ let f=e.target.files[0];if(!f)return;
+ let r=new FileReader();
+ r.onload=()=>{
+  try{
+   p=JSON.parse(r.result);p.title=p.title||'';p.idea=p.idea||'';p.story=p.story||{};
+   p.characters=Array.isArray(p.characters)?p.characters:[];p.scenes=Array.isArray(p.scenes)?p.scenes:[];p.assets=Array.isArray(p.assets)?p.assets:[];
+   p.characters=p.characters.map(c=>({...c,anchors:c.anchors||'',continuity:c.continuity||''}));
+   save();load();toast('Project imported')
+  }catch{toast('Invalid project file')}
+  e.target.value=''
+ };
+ r.readAsText(f)
+}
+
+function resetProject(){
+ if(confirm('Clear this project?')){
+  localStorage.removeItem(K);
+  p={title:'',idea:'',story:{},characters:[],scenes:[],assets:[]};
+  load();toast('Project cleared')
+ }
+}
+
+function demo(){
+ p={
+  title:'The Last Desk',
+  idea:'A student and his friends try to solve the shortage of desks at their school.',
+  story:{
+   logline:'Students turn a school problem into a community solution.',
+   beginning:'A crowded classroom begins a difficult school day.',
+   middle:'The students investigate the problem and rally support.',
+   climax:'The community comes together to provide desks.',
+   ending:'The classroom changes and students learn that action can create change.',
+   screenplay:'SCENE 1 — CLASSROOM\nNarrator: ...'
+  },
+  characters:[{
+   name:'Kofi',role:'Student',
+   appearance:'Ghanaian teenage boy, neat school uniform, short natural hair',
+   personality:'Curious, determined, respectful',
+   voice:'Natural youthful voice',
+   anchors:'Neat school uniform; short natural hair; consistent school bag; youthful appearance; calm but expressive body language.',
+   continuity:'Keep the same hairstyle, uniform, school bag, age range, facial identity and mannerisms in every shot unless the story explicitly changes them.'
+  }],
+  scenes:[{
+   name:'Scene 1 — Crowded classroom',
+   location:'Ghanaian school classroom',
+   action:'Students sit closely together while the teacher begins class.',
+   camera:'Slow wide establishing shot, then medium close-up',
+   light:'Soft morning daylight, realistic and hopeful',
+   dialogue:'Teacher: Good morning, class.'
+  }],
+  assets:[]
+ };
+ save();load();toast('Example loaded')
+}
+
+function useProjectIdea(){
+ $('directorIdea').value=$('idea').value||'';
+ if(!$('directorIdea').value)toast('Add a project idea first');else toast('Project idea loaded')
+}
+
+function makeScene(i,total,char,tone,style,idea){
+ const names=['Opening Image','Inciting Problem','Rising Action','Turning Point','Climax','Aftermath','Final Choice','New Beginning','Revelation','Closing Image'];
+ const acts=[
+  `${char} is introduced while the film's world and key situation are established. The visuals should directly reflect: ${idea}.`,
+  `The central problem connected to ${idea} becomes clear, forcing ${char} to react.`,
+  `${char} pursues a solution. A meaningful obstacle increases the stakes and reveals character.`,
+  `A major discovery or setback changes what ${char} believes and forces a difficult decision.`,
+  `The central conflict reaches its highest pressure. ${char} acts and the choice has visible consequences.`,
+  `The immediate consequences unfold and the characters process what has changed.`,
+  `${char} makes a final choice that resolves the central question raised by the story.`,
+  `The world settles into a new state, showing the practical and emotional result of the journey.`,
+  `A final realization connects the events back to the film's deeper theme.`,
+  `The film ends on a memorable visual moment that echoes the opening and leaves the audience with the story's message.`
+ ];
+ const locations=[
+  'Primary setting established by the filmmaker','The location where the central problem is visible',
+  'A connected location where the protagonist pursues the goal','A visually significant location suited to the turning point',
+  'The strongest location for the central confrontation','A quieter location showing consequences',
+  'A location where the final decision can be observed','The changed version of an earlier location',
+  'A meaningful location tied to the story theme','A final location or image that echoes the opening'
+ ];
+ const cams=[
+  'Wide establishing shot → medium character shot','Medium coverage → reaction close-ups',
+  'Smooth tracking shot → purposeful close-up','Alternating wide and close shots to build tension',
+  'Controlled close-ups → wide shot for scale','Slow medium shots with restrained movement',
+  'Steady close-up → wider reveal','Gentle tracking shot → calm final close-up',
+  'Slow push-in toward the character','Memorable wide closing shot'
+ ];
+ const lights=[
+  'Soft natural cinematic light','Realistic directional light with moderate contrast',
+  'Natural environmental light with cinematic depth','Controlled contrast emphasizing emotion',
+  'Dramatic but physically believable cinematic lighting','Softer light suggesting reflection',
+  'Focused natural light emphasizing the decision','Warm natural light suggesting renewal',
+  'Quiet atmospheric light','Natural closing light that visually echoes Scene 1'
+ ];
+ const dialogue=[
+  `${char}: I know something has to change.`,`${char}: We cannot ignore this anymore.`,
+  `${char}: There has to be another way.`,`${char}: If we do this, everything changes.`,
+  `${char}: This is our moment to decide.`,`${char}: Now we have to live with what happened.`,
+  `${char}: I know what I have to do.`,`${char}: We made it through.`,
+  `${char}: Now I understand.`,'Natural ambient sound; no unnecessary dialogue.'
+ ];
+ const shots=[
+  'Establish setting; introduce protagonist; show the story-relevant visual detail.',
+  'Show the problem; cut to protagonist reaction; reveal the immediate stakes.',
+  'Follow protagonist; show the obstacle; capture a meaningful reaction.',
+  'Reveal new information; close on protagonist; widen to show consequence.',
+  'Build visual tension; show decisive action; hold on the consequence.',
+  'Observe reactions; include environmental detail; slow the visual rhythm.',
+  'Frame the decision clearly; capture the action; reveal its result.',
+  'Return to a familiar visual idea with changed circumstances.',
+  'Use a visual symbol or detail that reinforces the theme.',
+  'Echo an image, location, or composition from the opening.'
+ ];
+ const n=(i-1)%names.length;
+ return {
+  name:`Scene ${i} — ${names[n]}`,location:locations[n],action:acts[n],
+  camera:cams[n],light:`${lights[n]}. Tone: ${tone}. Visual style: ${style}.`,
+  dialogue:dialogue[n],shots:shots[n]
+ };
+}
+
+function runDirector(){
+ const idea=$('directorIdea').value.trim();
+ if(!idea){toast('Enter a film idea first');return}
+
+ const genre=$('directorGenre').value,style=$('directorStyle').value,length=$('directorLength').value;
+ const total=parseInt($('directorScenes').value,10),tone=$('directorTone').value;
+ let char=$('directorCharacter').value.trim()||'the main character';
+
+ const title=idea.length>55?idea.substring(0,55).trim()+'...':idea;
+ const logline=`A ${genre.toLowerCase()} story about ${idea}`;
+ const beginning=`${char} is introduced as the story begins. The audience learns about the world, the character's situation and the first signs of the central conflict.`;
+ const middle=`${char} is forced to take action. Obstacles increase, relationships are tested and the consequences of failure become clearer.`;
+ const climax=`The conflict reaches its highest point. ${char} must make a decisive choice that determines what happens next.`;
+ const ending=`The consequences of the final choice are revealed. The story ends with an emotional image that reflects its central theme.`;
+
+ const scenes=[];
+ for(let i=1;i<=total;i++)scenes.push(makeScene(i,total,char,tone,style,idea));
+
+ p.title=title;p.idea=idea;
+ p.story={
+  logline,beginning,middle,climax,ending,
+  screenplay:`TITLE: ${title}\n\nGENRE: ${genre}\nTONE: ${tone}\nSTYLE: ${style}\nLENGTH: ${length}\n\nLOGLINE:\n${logline}\n\nBEGINNING:\n${beginning}\n\nMIDDLE:\n${middle}\n\nCLIMAX:\n${climax}\n\nENDING:\n${ending}`
+ };
+
+ if(p.characters.length===0&&char!=='the main character'){
+  const parts=char.split(',');
+  p.characters.push({
+   name:parts[0].trim(),role:'Main character',
+   appearance:parts.slice(1).join(',').trim()||'Appearance to be defined by the filmmaker.',
+   personality:'Determined, emotionally believable and consistent throughout the film.',
+   voice:'Natural, believable dialogue appropriate to the character.',
+   anchors:'Keep recognizable hairstyle, clothing, accessories, age range, facial identity and body language consistent.',
+   continuity:'Do not change the character identity, appearance, clothing or voice between shots unless the story explicitly requires it.'
+  });
+ }
+
+ p.scenes=scenes;save();load();
+
+ const bible=characterBibleText();
+
+ const master=`Create a ${length.toLowerCase()} ${genre.toLowerCase()} film.
+
+TITLE:
+${title}
+
+FILM IDEA:
+${idea}
+
+MAIN CHARACTER:
+${char}
+
+TONE:
+${tone}
+
+VISUAL STYLE:
+${style}
+
+CHARACTER BIBLE:
+${bible}
+
+DIRECTOR'S CONTINUITY RULES:
+Use the Character Bible as the source of truth for every scene. Keep each character's identity, facial appearance, hairstyle, clothing, accessories, age range, body language, personality, mannerisms and voice consistent from shot to shot. Do not randomly redesign or replace characters.
+
+DIRECTOR'S VISUAL RULES:
+Photorealistic cinematic imagery, believable human movement, consistent character identity, consistent clothing and physical appearance, realistic environments, natural lighting, coherent anatomy, cinematic composition, physically believable camera movement, strong visual continuity between shots, no unnecessary text, no watermark.
+
+STORY:
+${logline}
+
+SCENE PLAN:
+
+${scenes.map((s,i)=>`SCENE ${i+1}
+${s.name}
+Location: ${s.location}
+Action: ${s.action}
+Camera: ${s.camera}
+Lighting: ${s.light}
+Dialogue/Audio: ${s.dialogue}
+Shot Plan: ${s.shots}`).join('\n\n')}
+
+FINAL CONTINUITY REQUIREMENT:
+The film must feel like one continuous production. Character identity and visual anchors must remain stable across all scenes.`;
+
+ $('directorOutput').style.display='block';
+ $('directorSummary').innerHTML=`<div class="result"><h3>${esc(title)}</h3><div class="small">${esc(genre)} • ${esc(tone)} • ${esc(style)} • ${total} scenes • ${esc(length)}</div><p class="small">${esc(logline)}</p></div>`;
+ renderDirectorBible();
+ $('directorSteps').innerHTML=scenes.map((s,i)=>`<div class="step"><span>${i+1}</span><div><strong>${esc(s.name)}</strong><div class="small">${esc(s.action)}</div></div></div>`).join('');
+ $('masterPrompt').value=master;
+ toast('V3 film plan created')
+}
+
+function sendDirectorToV1(){
+ if(!p.idea){toast('Build a film first');return}
+ save();toast('Film sent to your filmmaking workspace');setTimeout(()=>openTab('story'),500)
+}
+
+function load(){
+ p.characters=Array.isArray(p.characters)?p.characters:[];
+ p.scenes=Array.isArray(p.scenes)?p.scenes:[];
+ p.assets=Array.isArray(p.assets)?p.assets:[];
+ p.characters=p.characters.map(c=>({...c,anchors:c.anchors||'',continuity:c.continuity||''}));
+ $('title').value=p.title||'';$('idea').value=p.idea||'';
+ let s=p.story||{};
+ ['logline','beginning','middle','climax','ending','screenplay'].forEach(k=>$(k).value=s[k]||'');
+ renderCharacters();renderScenes();renderAssets();refreshScenes();renderDirectorBible();
+ $('directorIdea').value=p.idea||''
+}
+
+load();
+
+if('serviceWorker' in navigator){
+ window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})
+}
+</script>
+
+
+<!-- CLEAN V4/V4.1/V4.2 SHOT DIRECTOR -->
+<style>
+#shotDirector .shot-card{border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0;background:#10182c}
+#shotDirector .shot-number{display:inline-block;padding:5px 9px;border-radius:999px;background:var(--accent);color:white;font-size:11px;font-weight:700;margin-bottom:8px}
+#shotDirector .shot-grid{display:grid;grid-template-columns:1fr;gap:8px}
+#shotDirector .shot-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+#shotDirector .shot-actions button{flex:1}
+#shotDirector .shot-prompt{min-height:220px!important}
+#shotDirector .suggestion-note{font-size:11px;color:var(--muted);margin:4px 0 0}
+@media(min-width:650px){#shotDirector .shot-grid{grid-template-columns:1fr 1fr}}
+</style>
+<script>
+(function(){
+  const V42={
+    shotType:['Establishing Wide Shot','Wide Shot','Medium-Wide Shot','Medium Shot','Medium Close-Up','Close-Up','Extreme Close-Up','Over-the-Shoulder Shot','Two-Shot','Point-of-View Shot','Reaction Shot','Action Shot','Detail Insert Shot','Environmental Shot'],
+    angle:['Eye Level','Low Angle','High Angle','Overhead','Bird’s-Eye View','Worm’s-Eye View','Dutch Angle','Shoulder Level','Point-of-View Angle'],
+    movement:['Locked-Off','Slow Push-In','Slow Pull-Back','Pan Left','Pan Right','Tilt Up','Tilt Down','Dolly Forward','Dolly Backward','Tracking Shot','Handheld','Slow Orbit','Crane Up','Crane Down','Subtle Camera Drift'],
+    framing:['Extreme Wide Framing','Wide Framing','Medium-Wide Framing','Medium Framing','Medium Close-Up Framing','Close Framing','Extreme Close-Up Framing','Over-the-Shoulder Framing','Two-Shot Framing','Tight Detail Framing'],
+    lighting:['Soft Natural Daylight','Warm Golden-Hour Light','Cool Morning Light','Soft Overcast Light','Bright Natural Interior Light','Low-Key Cinematic Lighting','High-Key Cinematic Lighting','Dramatic Side Lighting','Natural Backlighting','Window Light','Practical Lighting','Moody Ambient Lighting'],
+    style:['Photorealistic Cinematic','Naturalistic Film','Documentary Realism','Cinematic Realism','Grounded Realism','Warm Cinematic','Moody Cinematic','Intimate Cinematic','Epic Cinematic','Suspenseful Cinematic','Soft Dreamlike','Gritty Realistic','Clean Modern'],
+    duration:['2–3 seconds','3–4 seconds','4–5 seconds','4–6 seconds','5–7 seconds','6–8 seconds','8–10 seconds','10–12 seconds'],
+    audio:['Natural ambience','Room tone','Footsteps','Dialogue with natural ambience','Quiet atmosphere','Environmental sound','Natural background sound','Dialogue and subtle room tone','Cinematic ambient sound']
+  };
+  const esc4=x=>String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const txt=x=>String(x??'').trim();
+  const selected=()=>{const el=$('v4SceneSelect');if(!el)return null;const i=parseInt(el.value,10);return Number.isInteger(i)&&p.scenes[i]?{index:i,scene:p.scenes[i]}:null};
+  const subject=()=>Array.isArray(p.characters)&&p.characters.length?p.characters.map(c=>txt(c.name)).filter(Boolean).join(', '):(txt($('directorCharacter')?.value)||'Main subject of the scene');
+  const bible=()=>typeof characterBibleText==='function'?characterBibleText():'No Character Bible entries yet.';
+  const continuity=()=>{
+    let r='Preserve character identity, facial appearance, hairstyle, clothing, accessories, age range, body language, props, spatial position, screen direction, lighting and time of day across shots.';
+    const rules=(p.characters||[]).map(c=>txt(c.continuity)).filter(Boolean); if(rules.length)r+=' Character Bible rules: '+rules.join(' | '); return r;
+  };
+  const style=()=>txt($('directorStyle')?.value)||'Photorealistic cinematic';
+  const datalist=(id,vals)=>{if($(id))return;const d=document.createElement('datalist');d.id=id;vals.forEach(v=>{const o=document.createElement('option');o.value=v;d.appendChild(o)});document.body.appendChild(d)};
+  function installLists(){Object.keys(V42).forEach(k=>datalist('v42_'+k,V42[k]));datalist('v42_subject',(p.characters||[]).map(c=>c.name).filter(Boolean))}
+  function analyze(s){const t=[s.name,s.location,s.action,s.camera,s.light,s.dialogue].join(' ').toLowerCase();return{
+    movement:/\b(run|runs|running|chase|chases|chasing|move|moves|moving|follow|follows|walk|walks|walking|enter|enters|entering|arrive|arrives)\b/.test(t),
+    dialogue:/\b(talk|talks|talking|speak|speaks|speaking|conversation|dialogue|say|says|tell|tells|teacher|voice)\b/.test(t),
+    reaction:/\b(look|looks|looking|react|reaction|realize|realizes|discover|discovers|surprise|surprised|shock|shocked|fear|afraid|sad|sadness|happy|angry|anger|confused|confusion)\b/.test(t),
+    object:/\b(touch|touches|holding|hold|holds|open|opens|opening|close|closes|pick|picks|take|takes|desk|book|door|bag|phone|letter|key|object)\b/.test(t),
+    conflict:/\b(fight|fights|fighting|argue|argues|argument|confront|confronts|confrontation|conflict|attack|attacks)\b/.test(t),
+    reveal:/\b(reveal|reveals|revealing|secret|truth|hidden|find|finds|found|discovery)\b/.test(t),
+    quiet:/\b(sit|sits|sitting|wait|waits|waiting|alone|quiet|silence|silent|reflect|reflection)\b/.test(t)
+  }}
+  function buildPrompt(sh){return `Create one cinematic AI video shot.\n\nSHOT TYPE:\n${sh.type}\n\nCAMERA ANGLE:\n${sh.angle}\n\nCAMERA MOVEMENT:\n${sh.movement}\n\nFRAMING:\n${sh.framing}\n\nSUBJECT:\n${sh.subject}\n\nACTION / PERFORMANCE:\n${sh.action}\n\nENVIRONMENT:\n${sh.environment}\n\nLIGHTING:\n${sh.lighting}\n\nVISUAL STYLE:\n${sh.style}\n\nSHOT DURATION:\n${sh.duration}\n\nDIALOGUE / AUDIO:\n${sh.dialogue}\n\nCONTINUITY NOTES:\n${sh.continuity}\n\nCHARACTER BIBLE:\n${bible()}\n\nGENERATION REQUIREMENTS:\nPhotorealistic cinematic imagery, believable human movement, realistic anatomy, natural facial expressions, physically believable camera movement, coherent spatial geography, realistic lighting, cinematic composition, no unnecessary text, no watermark. Treat the Character Bible and Continuity Notes as the source of truth.`}
+  function makeShots(s){
+    const a=analyze(s),sub=subject(),env=txt(s.location)||'Scene environment',light=txt(s.light)||'Natural cinematic lighting',dlg=txt(s.dialogue)||'Natural ambient sound; no unnecessary dialogue.',sty=style(),out=[];
+    const add=(type,angle,movement,framing,action,duration)=>{const sh={type,angle,movement,framing,subject:sub,action,environment:env,lighting:light,style:sty,duration,dialogue:dlg,continuity:continuity()};sh.prompt=buildPrompt(sh);out.push(sh)};
+    add('Establishing Wide Shot','Eye level','Slow controlled push-in','Wide frame showing environment and subject',`Establish ${env}. Show the spatial layout before the main action begins. Scene action: ${s.action||'begin naturally.'}`,'4–6 seconds');
+    if(a.movement)add('Tracking Shot','Eye level','Smooth tracking movement following the subject','Medium-wide frame keeping subject and environment visible',`Follow ${sub} as they move through ${env}. Preserve natural movement and screen direction.`,'4–6 seconds'); else add('Medium Shot','Eye level','Subtle controlled camera movement','Medium framing focused on subject',`Introduce ${sub} clearly and show the beginning of the scene action: ${s.action||'perform the scene action naturally.'}`,'4–6 seconds');
+    if(a.dialogue)add('Over-the-Shoulder Dialogue Shot','Slightly above shoulder level','Very subtle camera adjustment','Over-the-shoulder framing connecting characters',`Show ${sub} during the conversation with believable listening, speaking and reactions.`,'3–5 seconds'); else if(a.reaction||a.reveal)add('Point-of-View / Over-the-Shoulder Shot','Natural eye-line angle','Slow deliberate push toward viewed subject','Over-the-shoulder or POV composition',`Show what ${sub} is seeing or discovering. Make the story-relevant visual information clear.`,'3–5 seconds'); else add('Medium Character Shot','Eye level','Subtle tracking or push-in','Medium framing',`Show ${sub} performing the central scene action naturally: ${s.action||'continue the scene action.'}`,'4–6 seconds');
+    if(a.reaction||a.dialogue||a.reveal)add('Close-Up Reaction Shot','Eye level','Locked-off with extremely subtle push-in','Close framing on the subject’s face',`Capture ${sub}'s natural reaction to the scene events while preserving identity and believable expression.`,'3–4 seconds');
+    if(a.conflict||a.movement)add('Dynamic Action Shot','Natural cinematic angle','Controlled tracking or pan','Medium-wide framing that clearly shows the action',`Show the main action clearly while maintaining spatial continuity and believable movement.`,'4–6 seconds');
+    if(a.object||a.reveal)add('Detail Insert Shot','Close detail angle','Minimal controlled movement','Tight close-up of the important object or interaction',`Show the important visual detail connected to the scene: ${s.action||'the key object or environmental detail.'}`,'2–4 seconds'); else add('Environmental Detail Shot','Close detail angle','Very slow controlled movement','Tight detail framing',`Show a meaningful detail of ${env} that reinforces the story and connects naturally to surrounding shots.`,'2–4 seconds');
+    add(a.quiet?'Quiet Closing Shot':'Reaction / Closing Shot','Eye level','Slow pull-back','Medium or wide closing composition',`End the scene with ${sub}'s reaction and a clear visual transition toward what happens next.`,'4–6 seconds');
+    return out;
+  }
+  function render(){const box=$('v4Shots'),shots=window.__v4Shots||[];if(!box)return;$('v4ShotOutput').style.display=shots.length?'block':'none';box.innerHTML=shots.map((sh,i)=>`<div class="shot-card"><span class="shot-number">SHOT ${i+1}</span><h3>${esc4(sh.type)}</h3><div class="shot-grid">
+<div><label>Shot type</label><input id="v41type${i}" value="${esc4(sh.type)}" list="v42_shotType"><div class="suggestion-note">💡 Choose a suggestion or type your own.</div></div>
+<div><label>Camera angle</label><input id="v41angle${i}" value="${esc4(sh.angle)}" list="v42_angle"></div>
+<div><label>Camera movement</label><input id="v41movement${i}" value="${esc4(sh.movement)}" list="v42_movement"></div>
+<div><label>Framing</label><input id="v41framing${i}" value="${esc4(sh.framing)}" list="v42_framing"></div>
+<div><label>Subject</label><input id="v41subject${i}" value="${esc4(sh.subject)}" list="v42_subject"></div>
+<div><label>Environment</label><input id="v41environment${i}" value="${esc4(sh.environment)}"></div>
+<div><label>Visual style</label><input id="v41style${i}" value="${esc4(sh.style)}" list="v42_style"></div>
+<div><label>Shot duration</label><input id="v41duration${i}" value="${esc4(sh.duration)}" list="v42_duration"></div></div>
+<label>Action / performance</label><textarea id="v41action${i}">${esc4(sh.action)}</textarea>
+<label>Lighting</label><textarea id="v41lighting${i}" list="v42_lighting">${esc4(sh.lighting)}</textarea>
+<label>Dialogue / audio</label><textarea id="v41dialogue${i}">${esc4(sh.dialogue)}</textarea>
+<label>Continuity notes</label><textarea id="v41continuity${i}">${esc4(sh.continuity)}</textarea>
+<label>Generation-ready shot prompt</label><textarea id="v41prompt${i}" class="shot-prompt">${esc4(sh.prompt)}</textarea>
+<div class="shot-actions"><button class="secondary" onclick="v4RebuildShot(${i})">🔄 Rebuild Prompt</button><button class="secondary" onclick="v4CopyShot(${i})">📋 Copy Shot</button><button class="primary" onclick="v4SendShot(${i})">↪️ Send to Prompt Builder</button></div></div>`).join('');
+    shots.forEach((_,i)=>{['type','angle','movement','framing','subject','environment','style','duration','action','lighting','dialogue','continuity'].forEach(k=>{const el=$('v41'+k+i);if(el&&!el.dataset.v4bound){el.dataset.v4bound='1';el.addEventListener('input',()=>v4RebuildShot(i))}})});
+  }
+  function collect(){return (window.__v4Shots||[]).map((sh,i)=>{const g=k=>$("v41"+k+i)?.value??sh[k]??'';const x={...sh,type:g('type'),angle:g('angle'),movement:g('movement'),framing:g('framing'),subject:g('subject'),environment:g('environment'),style:g('style'),duration:g('duration'),action:g('action'),lighting:g('lighting'),dialogue:g('dialogue'),continuity:g('continuity'),prompt:g('prompt')};return x})}
+  window.v4RebuildShot=function(i){const shots=window.__v4Shots||[];if(!shots[i])return;const g=k=>$('v41'+k+i)?.value??shots[i][k]??'';const sh={...shots[i],type:g('type'),angle:g('angle'),movement:g('movement'),framing:g('framing'),subject:g('subject'),environment:g('environment'),style:g('style'),duration:g('duration'),action:g('action'),lighting:g('lighting'),dialogue:g('dialogue'),continuity:g('continuity')};sh.prompt=buildPrompt(sh);shots[i]=sh;const out=$('v41prompt'+i);if(out)out.value=sh.prompt};
+  window.v4RefreshScenes=function(){const sel=$('v4SceneSelect');if(!sel)return;const scenes=p.scenes||[];sel.innerHTML=scenes.length?scenes.map((s,i)=>`<option value="${i}">${i+1}. ${esc4(s.name||'Untitled scene')}</option>`).join(''):'<option value="">No scenes available</option>';if(scenes.length){const old=window.__v4SceneIndex;if(Number.isInteger(old)&&scenes[old])sel.value=String(old);v4LoadSaved()}else v4ClearShots()};
+  function v4LoadSaved(){const x=selected();if(!x){v4ClearShots();return}window.__v4SceneIndex=x.index;const saved=x.scene.shots;if(Array.isArray(saved)&&saved.length){window.__v4Shots=saved.map(sh=>({...sh,subject:sh.subject||subject(),environment:sh.environment||x.scene.location||'Scene environment',style:sh.style||style(),duration:sh.duration||'4–6 seconds',dialogue:sh.dialogue||x.scene.dialogue||'Natural ambient sound.',continuity:sh.continuity||continuity(),prompt:sh.prompt||buildPrompt(sh)}));render();$('v4SceneInfo').style.display='block';$('v4SceneSummary').innerHTML=`<div class="result"><strong>${esc4(x.scene.name||'Untitled scene')}</strong><div class="small">Location: ${esc4(x.scene.location||'Not specified')}</div><div class="small">Saved shots: ${saved.length}</div></div>`}else{$('v4ShotOutput').style.display='none';$('v4SceneInfo').style.display='none';window.__v4Shots=[]}}
+  window.v4GenerateShots=function(){const x=selected();if(!x){toast('Select a scene first');return}window.__v4SceneIndex=x.index;window.__v4Shots=makeShots(x.scene);$('v4SceneInfo').style.display='block';$('v4SceneSummary').innerHTML=`<div class="result"><strong>${esc4(x.scene.name||'Untitled scene')}</strong><div class="small">Location: ${esc4(x.scene.location||'Not specified')}</div><div class="small">Action: ${esc4(x.scene.action||'Not specified')}</div><div class="small">🧠 Director suggestions are editable. You remain the director.</div></div>`;render();toast('Shot plan created')};
+  window.v4SaveShots=function(){const x=selected();if(!x){toast('Select a scene first');return}const shots=collect();x.scene.shots=shots;window.__v4Shots=shots;save();toast('Shots saved to scene')};
+  window.v4ClearShots=function(){window.__v4Shots=[];$('v4ShotOutput').style.display='none';$('v4SceneInfo').style.display='none';if($('v4Shots'))$('v4Shots').innerHTML=''};
+  window.v4CopyShot=function(i){const sh=collect()[i];if(!sh)return;copyValue(sh.prompt)};
+  window.v4CopyAllShots=function(){const shots=collect();if(!shots.length){toast('Generate shots first');return}copyValue(shots.map((s,i)=>`SHOT ${i+1}\n\n${s.prompt}`).join('\n\n--------------------\n\n'))};
+  function copyValue(value){navigator.clipboard?.writeText(value).then(()=>toast('Copied')).catch(()=>{const t=document.createElement('textarea');t.value=value;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();toast('Copied')})}
+  window.v4SendShot=function(i){const x=selected(),shots=collect();if(!x||!shots[i]){toast('Shot not found');return}x.scene.shots=shots;save();$('sceneSelect').value=String(x.index);refreshScenes();$('promptOut').value=`SCENE: ${x.scene.name||'Untitled scene'}\n\nLOCATION: ${x.scene.location||'Not specified'}\n\nSCENE ACTION: ${x.scene.action||'Not specified'}\n\n${shots[i].prompt}`;openTab('prompts');toast('Shot sent to Prompt Builder')};
+  $('v4SceneSelect')?.addEventListener('change',v4LoadSaved);
+  installLists();
+  v4RefreshScenes();
+})();
+</script>
+</body>
+</html>
