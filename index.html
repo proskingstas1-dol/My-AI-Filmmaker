@@ -245,23 +245,112 @@ function refreshScenes(){
 }
 
 function buildPrompt(){
- if(!p.scenes.length){$('promptOut').value='Add a scene first.';return}
- let s=p.scenes[+$('sceneSelect').value]||p.scenes[0];
- $('promptOut').value=`Cinematic AI video shot for "${p.title||'my film'}".
+  if(!p.scenes.length){
+    $('promptOut').value='Add a scene first.';
+    return;
+  }
 
-SCENE: ${s.name}
-LOCATION: ${s.location}
-ACTION: ${s.action}
-CAMERA: ${s.camera}
-LIGHTING/MOOD: ${s.light}
-DIALOGUE/AUDIO: ${s.dialogue}
+  const s=p.scenes[+$('sceneSelect').value]||p.scenes[0];
+  const shots=Array.isArray(s.shots)?s.shots:[];
+
+  if(shots.length){
+    const shot=shots[shots.length-1];
+
+    $('promptOut').value=
+`🎬 GENERATION-READY CINEMATIC PROMPT
+
+FILM:
+${p.title||'My Film'}
+
+SCENE:
+${s.name||'Untitled scene'}
+
+SHOT TYPE:
+${shot.type||'Medium Shot'}
+
+CAMERA ANGLE:
+${shot.angle||'Eye Level'}
+
+CAMERA MOVEMENT:
+${shot.movement||'Locked-Off'}
+
+FRAMING:
+${shot.framing||'Medium Framing'}
+
+SUBJECT:
+${shot.subject||'Main subject of the scene'}
+
+ACTION / PERFORMANCE:
+${shot.action||s.action||'Perform the scene action naturally.'}
+
+ENVIRONMENT:
+${shot.environment||s.location||'Scene environment'}
+
+LIGHTING:
+${shot.lighting||s.light||'Natural cinematic lighting'}
+
+VISUAL STYLE:
+${shot.style||'Photorealistic Cinematic'}
+
+SHOT DURATION:
+${shot.duration||'4–6 seconds'}
+
+DIALOGUE / AUDIO:
+${shot.dialogue||s.dialogue||'Natural ambient sound'}
+
+CONTINUITY NOTES:
+${shot.continuity||'Preserve continuity with previous and following shots.'}
+
+CHARACTER BIBLE:
+${characterBibleText()}
+
+FINAL GENERATION INSTRUCTION:
+${shot.prompt||''}
+
+Create the shot as photorealistic cinematic footage with believable human movement, realistic anatomy, natural facial expressions, physically believable camera movement, coherent spatial geography and consistent lighting.
+
+Maintain the exact character identity, hairstyle, clothing, accessories, age range, appearance and visual anchors defined in the Character Bible.
+
+Do not redesign the characters between shots. Preserve continuity with the surrounding scenes. No unnecessary text or watermark.`;
+
+    toast('Generation-ready prompt built');
+    return;
+  }
+
+  $('promptOut').value=
+`🎬 GENERATION-READY CINEMATIC PROMPT
+
+FILM:
+${p.title||'My Film'}
+
+SCENE:
+${s.name||'Untitled scene'}
+
+LOCATION:
+${s.location||'Not specified'}
+
+ACTION:
+${s.action||'Perform the scene action naturally.'}
+
+CAMERA:
+${s.camera||'Cinematic camera movement'}
+
+LIGHTING / MOOD:
+${s.light||'Natural cinematic lighting'}
+
+DIALOGUE / AUDIO:
+${s.dialogue||'Natural ambient sound'}
 
 CHARACTER BIBLE:
 ${characterBibleText()}
 
 VISUAL DIRECTION:
-Photorealistic, natural human motion, consistent character identity and clothing, believable environment, coherent anatomy, cinematic composition, realistic lighting, no text or watermark. Preserve continuity with previous shots.`
-}
+Photorealistic cinematic imagery, believable human movement, realistic anatomy, natural facial expressions, coherent environment, realistic lighting, cinematic composition and strong character continuity.
+
+Preserve character identity, appearance, clothing, hairstyle, accessories and visual anchors across shots. No unnecessary text or watermark.`;
+
+  toast('Generation-ready prompt built');
+ }
 
 async function copyText(id){
  try{await navigator.clipboard.writeText($(id).value);toast('Copied')}
