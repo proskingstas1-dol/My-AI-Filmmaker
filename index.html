@@ -609,7 +609,74 @@ if('serviceWorker' in navigator){
   window.v4CopyShot=function(i){const sh=collect()[i];if(!sh)return;copyValue(sh.prompt)};
   window.v4CopyAllShots=function(){const shots=collect();if(!shots.length){toast('Generate shots first');return}copyValue(shots.map((s,i)=>`SHOT ${i+1}\n\n${s.prompt}`).join('\n\n--------------------\n\n'))};
   function copyValue(value){navigator.clipboard?.writeText(value).then(()=>toast('Copied')).catch(()=>{const t=document.createElement('textarea');t.value=value;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();toast('Copied')})}
-  window.v4SendShot=function(i){const x=selected(),shots=collect();if(!x||!shots[i]){toast('Shot not found');return}x.scene.shots=shots;save();$('sceneSelect').value=String(x.index);refreshScenes();$('promptOut').value=`SCENE: ${x.scene.name||'Untitled scene'}\n\nLOCATION: ${x.scene.location||'Not specified'}\n\nSCENE ACTION: ${x.scene.action||'Not specified'}\n\n${shots[i].prompt}`;openTab('prompts');toast('Shot sent to Prompt Builder')};
+  window.v4SendShot=function(i){
+  const x=selected(),shots=collect();
+
+  if(!x||!shots[i]){
+    toast('Shot not found');
+    return;
+  }
+
+  x.scene.shots=shots;
+  save();
+
+  const shot=shots[i];
+
+  $('sceneSelect').value=String(x.index);
+  refreshScenes();
+
+  $('promptOut').value=
+`🎬 FILM: ${p.title||'My Film'}
+
+SCENE: ${x.scene.name||'Untitled scene'}
+
+SHOT ${i+1}
+
+SHOT TYPE:
+${shot.type||'Not specified'}
+
+CAMERA ANGLE:
+${shot.angle||'Not specified'}
+
+CAMERA MOVEMENT:
+${shot.movement||'Not specified'}
+
+FRAMING:
+${shot.framing||'Not specified'}
+
+SUBJECT:
+${shot.subject||'Not specified'}
+
+ACTION / PERFORMANCE:
+${shot.action||'Not specified'}
+
+ENVIRONMENT:
+${shot.environment||x.scene.location||'Not specified'}
+
+LIGHTING:
+${shot.lighting||x.scene.light||'Not specified'}
+
+VISUAL STYLE:
+${shot.style||'Photorealistic Cinematic'}
+
+SHOT DURATION:
+${shot.duration||'4–6 seconds'}
+
+DIALOGUE / AUDIO:
+${shot.dialogue||x.scene.dialogue||'Natural ambient sound'}
+
+CONTINUITY NOTES:
+${shot.continuity||'Preserve continuity with previous and following shots.'}
+
+CHARACTER BIBLE:
+${typeof characterBibleText==='function'?characterBibleText():'No Character Bible entries yet.'}
+
+GENERATION-READY PROMPT:
+${shot.prompt||''}`;
+
+  openTab('prompts');
+  toast('Shot sent to Prompt Builder');
+};
   $('v4SceneSelect')?.addEventListener('change',v4LoadSaved);
   installLists();
   v4RefreshScenes();
