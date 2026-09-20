@@ -3016,7 +3016,13 @@ if(document.readyState==='loading'){
   if(aiDirector){
     aiDirector.insertAdjacentElement('afterend',b);
   }else{
-    nav.appendChild(b);
+    const aiDirector=nav.querySelector('button[data-tab="director"]');
+
+if(aiDirector){
+  aiDirector.insertAdjacentElement('afterend',b);
+}else{
+  nav.appendChild(b);
+}
   }
 }
 </body>
