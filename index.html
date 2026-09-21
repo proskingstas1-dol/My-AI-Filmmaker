@@ -1078,6 +1078,101 @@ document.addEventListener('DOMContentLoaded', () => {
   csRefreshScenes();
 
 });
+
+  /* ================================
+   CREATION STUDIO — STEP 2
+   Reference Media Preview
+================================ */
+
+let csReferenceImageURL = '';
+let csReferenceVideoURL = '';
+
+function csShowReferenceMedia(){
+
+  const imageInput = $('csReferenceImage');
+  const videoInput = $('csReferenceVideo');
+  const preview = $('csMediaPreview');
+
+  if(!preview) return;
+
+  preview.innerHTML = '';
+
+  /* IMAGE */
+
+  if(imageInput && imageInput.files && imageInput.files[0]){
+
+    const file = imageInput.files[0];
+
+    csReferenceImageURL = URL.createObjectURL(file);
+
+    const title = document.createElement('div');
+    title.className = 'small';
+    title.textContent = `🖼️ Image selected: ${file.name}`;
+
+    const img = document.createElement('img');
+    img.src = csReferenceImageURL;
+    img.style.width = '100%';
+    img.style.maxHeight = '280px';
+    img.style.objectFit = 'contain';
+    img.style.marginTop = '10px';
+    img.style.borderRadius = '12px';
+
+    preview.appendChild(title);
+    preview.appendChild(img);
+  }
+
+  /* VIDEO */
+
+  if(videoInput && videoInput.files && videoInput.files[0]){
+
+    const file = videoInput.files[0];
+
+    csReferenceVideoURL = URL.createObjectURL(file);
+
+    const title = document.createElement('div');
+    title.className = 'small';
+    title.style.marginTop = '14px';
+    title.textContent = `🎥 Video selected: ${file.name}`;
+
+    const video = document.createElement('video');
+    video.src = csReferenceVideoURL;
+    video.controls = true;
+    video.style.width = '100%';
+    video.style.maxHeight = '300px';
+    video.style.marginTop = '10px';
+    video.style.borderRadius = '12px';
+
+    preview.appendChild(title);
+    preview.appendChild(video);
+  }
+
+  /* NOTHING SELECTED */
+
+  if(
+    (!imageInput || !imageInput.files.length) &&
+    (!videoInput || !videoInput.files.length)
+  ){
+    preview.textContent = 'No reference media selected.';
+  }
+}
+
+
+/* Connect the file inputs */
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  const imageInput = $('csReferenceImage');
+  const videoInput = $('csReferenceVideo');
+
+  if(imageInput){
+    imageInput.addEventListener('change', csShowReferenceMedia);
+  }
+
+  if(videoInput){
+    videoInput.addEventListener('change', csShowReferenceMedia);
+  }
+
+});
 </script>
 </body>
 </html>
