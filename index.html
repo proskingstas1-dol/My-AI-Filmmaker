@@ -203,11 +203,26 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:30px 10px}
     📦 Save to Assets
   </button>
 
-  <textarea
-    id="csResult"
-    style="min-height:320px;margin-top:12px"
-    readonly
-    placeholder="Your generation-ready creation package will appear here..."></textarea>
+<div
+  id="csResult"
+  class="result"
+  style="min-height:320px;margin-top:12px;white-space:pre-wrap"
+>
+  Your generation-ready creation package will appear here...
+</div>
+
+<div
+  id="csOutputPreview"
+  style="margin-top:14px"
+>
+</div>
+
+<div
+  id="csOutputStatus"
+  class="notice"
+  style="margin-top:12px"
+>
+  🎬 No generated media yet.
 </div>
 </section>
  
