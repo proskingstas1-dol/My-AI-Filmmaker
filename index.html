@@ -1619,6 +1619,115 @@ later stage.`;
   }
 
   /* ================================
+   4K — GENERATED MEDIA FOUNDATION
+   Generated output persistence
+================================ */
+
+const GENERATED_MEDIA_KEY =
+  'my_ai_filmmaker_generated_media';
+
+function csGetGeneratedMedia(){
+
+  try{
+
+    return JSON.parse(
+      localStorage.getItem(
+        GENERATED_MEDIA_KEY
+      ) || '[]'
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+    return [];
+
+  }
+
+}
+
+
+function csSaveGeneratedMedia(media){
+
+  localStorage.setItem(
+    GENERATED_MEDIA_KEY,
+    JSON.stringify(media)
+  );
+
+}
+
+
+function csCreateGeneratedMediaRecord(data = {}){
+
+  const media =
+    csGetGeneratedMedia();
+
+  const now =
+    Date.now();
+
+  const record = {
+
+    id:
+      'generated_' +
+      now +
+      '_' +
+      Math.random()
+        .toString(36)
+        .slice(2,8),
+
+    type:
+      data.type || 'image',
+
+    status:
+      data.status || 'pending',
+
+    sceneIndex:
+      Number.isInteger(data.sceneIndex)
+        ? data.sceneIndex
+        : null,
+
+    shotIndex:
+      Number.isInteger(data.shotIndex)
+        ? data.shotIndex
+        : null,
+
+    prompt:
+      data.prompt || '',
+
+    instructions:
+      data.instructions || '',
+
+    style:
+      data.style || '',
+
+    aspect:
+      data.aspect || '',
+
+    duration:
+      data.duration || '',
+
+    resultUrl:
+      data.resultUrl || '',
+
+    resultName:
+      data.resultName || '',
+
+    createdAt:
+      now,
+
+    updatedAt:
+      now
+
+  };
+
+  media.push(record);
+
+  csSaveGeneratedMedia(media);
+
+  return record;
+
+     }
+  /* ================================
    CREATION STUDIO — STEP 4B
    Save Creation Package to Assets
 ================================ */
