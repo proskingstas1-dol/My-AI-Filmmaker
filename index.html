@@ -1496,7 +1496,8 @@ function csSetOutputPending(){
     '⏳ Generation is ready for an AI provider.'
   );
   }
-function csSaveCreation(){
+
+    function csSaveCreation(){
 
   const result = $('csResult')?.value || '';
 
@@ -1607,6 +1608,10 @@ ${result}`
 
   save();
   renderAssets();
+
+  csSetOutputStatus(
+    '📦 Creation package saved to Assets.'
+  );
 
   toast('Creation saved to Assets');
 
