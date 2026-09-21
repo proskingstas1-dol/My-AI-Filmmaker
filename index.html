@@ -1203,9 +1203,17 @@ function csPrepareCreation(){
   }
 
   if(scene && shotSelect && shotSelect.value !== ''){
-    const shots = Array.isArray(scene.shots) ? scene.shots : [];
+    const shots = Array.isArray(scene.shots)
+      ? scene.shots
+      : [];
+
     shot = shots[Number(shotSelect.value)] || null;
   }
+
+  const characterBible =
+    typeof characterBibleText === 'function'
+      ? characterBibleText()
+      : 'Character continuity information not available.';
 
   const referenceImage =
     $('csReferenceImage')?.files?.[0]?.name || 'None';
@@ -1213,12 +1221,15 @@ function csPrepareCreation(){
   const referenceVideo =
     $('csReferenceVideo')?.files?.[0]?.name || 'None';
 
-  const characterBible =
-    typeof characterBibleText === 'function'
-      ? characterBibleText()
-      : 'Character continuity information not available.';
+  const sceneName =
+    scene?.name || 'Not selected';
 
-  const result = `🎬 CREATION PACKAGE
+  const shotName =
+    shot
+      ? `${shot.type || 'Shot'} — ${shot.subject || 'Main subject'}`
+      : 'Not selected';
+
+  const result = `🎬 AI CREATION PACKAGE
 
 FILM
 ${p.title || 'My Film'}
@@ -1227,71 +1238,138 @@ OUTPUT
 ${outputType === 'video' ? '🎥 Video' : '🖼️ Image'}
 
 SCENE
-${scene?.name || 'Not selected'}
+${sceneName}
 
 SHOT
-${shot
-  ? `${shot.type || 'Shot'} — ${shot.subject || 'Main subject'}`
-  : 'Not selected'}
+${shotName}
 
-CREATION PROMPT
-${prompt || 'No creation prompt provided.'}
+━━━━━━━━━━━━━━━━━━━━
 
-CREATIVE INSTRUCTIONS
-${instructions || 'Preserve the intended character identity, environment, composition and cinematic direction.'}
-
-VISUAL STYLE
-${style}
-
-ASPECT RATIO
-${aspect}
-
-VIDEO DURATION
-${outputType === 'video' ? duration : 'Not applicable'}
-
-REFERENCE IMAGE
-${referenceImage}
-
-REFERENCE VIDEO
-${referenceVideo}
-
-CHARACTER BIBLE
+🎭 CHARACTER CONTINUITY
 ${characterBible}
 
-SHOT DIRECTION
+━━━━━━━━━━━━━━━━━━━━
+
+🎥 SHOT DIRECTION
 ${shot ? `
-Type: ${shot.type || 'Not specified'}
-Angle: ${shot.angle || 'Not specified'}
-Movement: ${shot.movement || 'Not specified'}
-Framing: ${shot.framing || 'Not specified'}
-Lighting: ${shot.lighting || 'Not specified'}
-Style: ${shot.style || style}
-Action: ${shot.action || 'Not specified'}
-Environment: ${shot.environment || 'Not specified'}
-Continuity: ${shot.continuity || 'Preserve continuity.'}
-` : 'No shot selected.'}
+Shot Type:
+${shot.type || 'Not specified'}
 
-FINAL CREATION INSTRUCTION
-Create the requested ${outputType} as photorealistic cinematic media.
+Camera Angle:
+${shot.angle || 'Not specified'}
 
-Preserve character identity, hairstyle, clothing, accessories,
-age range, appearance and visual anchors defined by the
-Character Bible.
+Camera Movement:
+${shot.movement || 'Not specified'}
 
-Preserve the selected scene and shot direction.
+Framing:
+${shot.framing || 'Not specified'}
 
-Follow the requested camera, framing, lighting, environment,
-visual style and creative instructions.
+Subject:
+${shot.subject || 'Main subject'}
 
-Maintain believable anatomy, natural movement, realistic
-lighting and coherent spatial continuity.
+Action:
+${shot.action || scene?.action || 'Perform the scene action naturally.'}
 
-Do not unnecessarily redesign the characters or environment.
-Do not add unwanted text or watermarks.
+Environment:
+${shot.environment || scene?.location || 'Scene environment'}
 
-REFERENCE MEDIA
-Use the selected reference media as visual guidance while
-following the creative instructions above.
+Lighting:
+${shot.lighting || scene?.light || 'Natural cinematic lighting'}
+
+Visual Style:
+${shot.style || style}
+
+Duration:
+${shot.duration || duration}
+
+Dialogue / Audio:
+${shot.dialogue || scene?.dialogue || 'Natural ambient sound'}
+
+Continuity:
+${shot.continuity || 'Preserve continuity with surrounding shots.'}
+
+Shot Prompt:
+${shot.prompt || 'Follow the complete shot direction above.'}
+` : `
+No specific shot selected.
+
+Scene Action:
+${scene?.action || 'Perform the scene action naturally.'}
+
+Environment:
+${scene?.location || 'Scene environment'}
+
+Lighting:
+${scene?.light || 'Natural cinematic lighting'}
+
+Camera:
+${scene?.camera || 'Cinematic camera movement'}
+`}
+
+━━━━━━━━━━━━━━━━━━━━
+
+📝 CREATION PROMPT
+${prompt || 'Create the selected scene and shot according to the filmmaking direction above.'}
+
+━━━━━━━━━━━━━━━━━━━━
+
+🎨 CREATIVE INSTRUCTIONS
+${instructions || 'Preserve the intended character identity, environment, composition and cinematic direction.'}
+
+━━━━━━━━━━━━━━━━━━━━
+
+⚙️ GENERATION SETTINGS
+
+Visual Style:
+${style}
+
+Aspect Ratio:
+${aspect}
+
+Duration:
+${outputType === 'video' ? duration : 'Not applicable'}
+
+Reference Image:
+${referenceImage}
+
+Reference Video:
+${referenceVideo}
+
+━━━━━━━━━━━━━━━━━━━━
+
+🎬 FINAL AI GENERATION INSTRUCTION
+
+Create a ${outputType} from the filmmaking information above.
+
+Preserve the exact character identity and continuity defined by
+the Character Bible.
+
+Preserve hairstyle, clothing, accessories, age range,
+appearance and other important visual anchors.
+
+Follow the selected scene and shot direction exactly.
+
+Follow the specified camera angle, camera movement, framing,
+lighting, environment, action and visual style.
+
+Maintain believable anatomy, realistic facial expressions,
+natural movement and physically believable lighting.
+
+Maintain coherent spatial geography and continuity with
+previous and following shots.
+
+Use the supplied reference media as visual guidance when
+available.
+
+Follow the user's creative instructions without unnecessarily
+redesigning the characters, environment or composition.
+
+Do not add unwanted text, logos or watermarks.
+
+The result should feel like professionally directed
+photorealistic cinematic media.
+
+━━━━━━━━━━━━━━━━━━━━
 
 STATUS
 Generation package prepared.
@@ -1303,8 +1381,8 @@ later stage.`;
     $('csResult').value = result;
   }
 
-  toast('Creation package prepared');
-  }
+  toast('AI creation package prepared');
+}
 
   /* ================================
    CREATION STUDIO — STEP 4B
