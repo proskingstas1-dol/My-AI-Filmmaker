@@ -1167,6 +1167,134 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 });
+
+  /* ================================
+   CREATION STUDIO — STEP 3
+   Creation Package Builder
+================================ */
+
+function csPrepareCreation(){
+
+  const sceneSelect = $('csSceneSelect');
+  const shotSelect = $('csShotSelect');
+
+  const outputType = $('csOutputType')?.value || 'image';
+  const prompt = $('csPrompt')?.value || '';
+  const instructions = $('csInstructions')?.value || '';
+  const style = $('csStyle')?.value || 'Photorealistic Cinematic';
+  const aspect = $('csAspect')?.value || '16:9 — Widescreen';
+  const duration = $('csDuration')?.value || '4–6 seconds';
+
+  let scene = null;
+  let shot = null;
+
+  if(sceneSelect && sceneSelect.value !== ''){
+    scene = p.scenes[Number(sceneSelect.value)] || null;
+  }
+
+  if(scene && shotSelect && shotSelect.value !== ''){
+    const shots = Array.isArray(scene.shots) ? scene.shots : [];
+    shot = shots[Number(shotSelect.value)] || null;
+  }
+
+  const referenceImage =
+    $('csReferenceImage')?.files?.[0]?.name || 'None';
+
+  const referenceVideo =
+    $('csReferenceVideo')?.files?.[0]?.name || 'None';
+
+  const characterBible =
+    typeof characterBibleText === 'function'
+      ? characterBibleText()
+      : 'Character continuity information not available.';
+
+  const result = `🎬 CREATION PACKAGE
+
+FILM
+${p.title || 'My Film'}
+
+OUTPUT
+${outputType === 'video' ? '🎥 Video' : '🖼️ Image'}
+
+SCENE
+${scene?.name || 'Not selected'}
+
+SHOT
+${shot
+  ? `${shot.type || 'Shot'} — ${shot.subject || 'Main subject'}`
+  : 'Not selected'}
+
+CREATION PROMPT
+${prompt || 'No creation prompt provided.'}
+
+CREATIVE INSTRUCTIONS
+${instructions || 'Preserve the intended character identity, environment, composition and cinematic direction.'}
+
+VISUAL STYLE
+${style}
+
+ASPECT RATIO
+${aspect}
+
+VIDEO DURATION
+${outputType === 'video' ? duration : 'Not applicable'}
+
+REFERENCE IMAGE
+${referenceImage}
+
+REFERENCE VIDEO
+${referenceVideo}
+
+CHARACTER BIBLE
+${characterBible}
+
+SHOT DIRECTION
+${shot ? `
+Type: ${shot.type || 'Not specified'}
+Angle: ${shot.angle || 'Not specified'}
+Movement: ${shot.movement || 'Not specified'}
+Framing: ${shot.framing || 'Not specified'}
+Lighting: ${shot.lighting || 'Not specified'}
+Style: ${shot.style || style}
+Action: ${shot.action || 'Not specified'}
+Environment: ${shot.environment || 'Not specified'}
+Continuity: ${shot.continuity || 'Preserve continuity.'}
+` : 'No shot selected.'}
+
+FINAL CREATION INSTRUCTION
+Create the requested ${outputType} as photorealistic cinematic media.
+
+Preserve character identity, hairstyle, clothing, accessories,
+age range, appearance and visual anchors defined by the
+Character Bible.
+
+Preserve the selected scene and shot direction.
+
+Follow the requested camera, framing, lighting, environment,
+visual style and creative instructions.
+
+Maintain believable anatomy, natural movement, realistic
+lighting and coherent spatial continuity.
+
+Do not unnecessarily redesign the characters or environment.
+Do not add unwanted text or watermarks.
+
+REFERENCE MEDIA
+Use the selected reference media as visual guidance while
+following the creative instructions above.
+
+STATUS
+Generation package prepared.
+
+The actual AI generation provider will be connected in a
+later stage.`;
+
+  if($('csResult')){
+    $('csResult').value = result;
+  }
+
+  toast('Creation package prepared');
+  }
 </script>
 </body>
 </html>
