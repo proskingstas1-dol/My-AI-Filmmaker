@@ -279,9 +279,16 @@ function openTab(tab){
  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
  $(tab).classList.add('active');
+
  if(tab==='prompts')refreshScenes();
+
  if(tab==='director')renderDirectorBible();
+
  if(tab==='shotDirector')v4RefreshScenes();
+
+ if(tab==='creationStudio'){
+   csRefreshScenes();
+ }
 }
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>openTab(b.dataset.tab));
 
