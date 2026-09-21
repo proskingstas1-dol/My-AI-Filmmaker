@@ -1611,6 +1611,45 @@ later stage.`;
     $('csResult').value = result;
   }
 
+  /* ================================
+     4K — CREATE GENERATED MEDIA RECORD
+  ================================= */
+
+  csCreateGeneratedMediaRecord({
+
+    type: outputType,
+
+    status: 'prepared',
+
+    sceneIndex:
+      sceneSelect && sceneSelect.value !== ''
+        ? Number(sceneSelect.value)
+        : null,
+
+    shotIndex:
+      shotSelect && shotSelect.value !== ''
+        ? Number(shotSelect.value)
+        : null,
+
+    prompt: prompt,
+
+    instructions: instructions,
+
+    style: style,
+
+    aspect: aspect,
+
+    duration:
+      outputType === 'video'
+        ? duration
+        : '',
+
+    resultUrl: '',
+
+    resultName: ''
+
+  });
+
   csClearOutput();
 
   csSetOutputPending();
