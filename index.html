@@ -1139,7 +1139,7 @@ function csOpenMediaDB(){
 let csReferenceImageURL = '';
 let csReferenceVideoURL = '';
 
-function csShowReferenceMedia(){
+async function csShowReferenceMedia(){
 
   const imageInput = $('csReferenceImage');
   const videoInput = $('csReferenceVideo');
@@ -1149,79 +1149,139 @@ function csShowReferenceMedia(){
 
   preview.innerHTML = '';
 
-  /* IMAGE */
+  try{
 
-  if(imageInput && imageInput.files && imageInput.files[0]){
+    const db = await csOpenMediaDB();
 
-    const file = imageInput.files[0];
+    /* IMAGE */
 
-    csReferenceImageURL = URL.createObjectURL(file);
+    if(imageInput && imageInput.files && imageInput.files[0]){
 
-    const title = document.createElement('div');
-    title.className = 'small';
-    title.textContent = `🖼️ Image selected: ${file.name}`;
+      const file = imageInput.files[0];
 
-    const img = document.createElement('img');
-    img.src = csReferenceImageURL;
-    img.style.width = '100%';
-    img.style.maxHeight = '280px';
-    img.style.objectFit = 'contain';
-    img.style.marginTop = '10px';
-    img.style.borderRadius = '12px';
+      const id = 'reference_image';
 
-    preview.appendChild(title);
-    preview.appendChild(img);
+      await new Promise((resolve, reject) => {
+
+        const transaction =
+          db.transaction(CS_MEDIA_STORE, 'readwrite');
+
+        const store =
+          transaction.objectStore(CS_MEDIA_STORE);
+
+        const request = store.put({
+          id: id,
+          type: 'image',
+          name: file.name,
+          file: file,
+          savedAt: Date.now()
+        });
+
+        request.onsuccess = resolve;
+        request.onerror = () => reject(request.error);
+
+      });
+
+      csReferenceImageURL =
+        URL.createObjectURL(file);
+
+      const title = document.createElement('div');
+      title.className = 'small';
+      title.textContent =
+        `🖼️ Image saved: ${file.name}`;
+
+      const img = document.createElement('img');
+
+      img.src = csReferenceImageURL;
+      img.alt = 'Reference image';
+
+      img.style.width = '100%';
+      img.style.maxHeight = '280px';
+      img.style.objectFit = 'contain';
+      img.style.marginTop = '10px';
+      img.style.borderRadius = '12px';
+
+      preview.appendChild(title);
+      preview.appendChild(img);
+    }
+
+
+    /* VIDEO */
+
+    if(videoInput && videoInput.files && videoInput.files[0]){
+
+      const file = videoInput.files[0];
+
+      const id = 'reference_video';
+
+      await new Promise((resolve, reject) => {
+
+        const transaction =
+          db.transaction(CS_MEDIA_STORE, 'readwrite');
+
+        const store =
+          transaction.objectStore(CS_MEDIA_STORE);
+
+        const request = store.put({
+          id: id,
+          type: 'video',
+          name: file.name,
+          file: file,
+          savedAt: Date.now()
+        });
+
+        request.onsuccess = resolve;
+        request.onerror = () => reject(request.error);
+
+      });
+
+      csReferenceVideoURL =
+        URL.createObjectURL(file);
+
+      const title = document.createElement('div');
+      title.className = 'small';
+      title.style.marginTop = '14px';
+      title.textContent =
+        `🎥 Video saved: ${file.name}`;
+
+      const video = document.createElement('video');
+
+      video.src = csReferenceVideoURL;
+      video.controls = true;
+      video.playsInline = true;
+
+      video.style.width = '100%';
+      video.style.maxHeight = '300px';
+      video.style.marginTop = '10px';
+      video.style.borderRadius = '12px';
+
+      preview.appendChild(title);
+      preview.appendChild(video);
+    }
+
+
+    if(
+      (!imageInput || !imageInput.files.length) &&
+      (!videoInput || !videoInput.files.length)
+    ){
+      preview.textContent =
+        'No reference media selected.';
+    }
+
+    db.close();
+
+    toast('Reference media saved locally');
+
+  }catch(error){
+
+    console.error(error);
+
+    preview.textContent =
+      '⚠️ Could not save reference media.';
+
+    toast('Reference media could not be saved');
+
   }
-
-  /* VIDEO */
-
-  if(videoInput && videoInput.files && videoInput.files[0]){
-
-    const file = videoInput.files[0];
-
-    csReferenceVideoURL = URL.createObjectURL(file);
-
-    const title = document.createElement('div');
-    title.className = 'small';
-    title.style.marginTop = '14px';
-    title.textContent = `🎥 Video selected: ${file.name}`;
-
-    const video = document.createElement('video');
-    video.src = csReferenceVideoURL;
-    video.controls = true;
-    video.style.width = '100%';
-    video.style.maxHeight = '300px';
-    video.style.marginTop = '10px';
-    video.style.borderRadius = '12px';
-
-    preview.appendChild(title);
-    preview.appendChild(video);
-  }
-
-  /* NOTHING SELECTED */
-
-  if(
-    (!imageInput || !imageInput.files.length) &&
-    (!videoInput || !videoInput.files.length)
-  ){
-    preview.textContent = 'No reference media selected.';
-  }
-}
-
-
-/* Connect the file inputs */
-
-document.addEventListener('DOMContentLoaded', () => {
-
-  const imageInput = $('csReferenceImage');
-  const videoInput = $('csReferenceVideo');
-
-  if(imageInput){
-    imageInput.addEventListener('change', csShowReferenceMedia);
-  }
-
-  if(videoInput){
-    videoInput.addEventListener('change', csShowReferenceMedia);
   }
 
 });
