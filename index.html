@@ -1282,6 +1282,128 @@ async function csShowReferenceMedia(){
     toast('Reference media could not be saved');
 
   }
+
+  /* ================================
+   4J — Part 3
+   Load saved reference media
+================================ */
+
+async function csLoadSavedReferenceMedia(){
+
+  const preview = $('csMediaPreview');
+
+  if(!preview) return;
+
+  try{
+
+    const db = await csOpenMediaDB();
+
+    const records = await new Promise((resolve, reject) => {
+
+      const transaction =
+        db.transaction(CS_MEDIA_STORE, 'readonly');
+
+      const store =
+        transaction.objectStore(CS_MEDIA_STORE);
+
+      const request = store.getAll();
+
+      request.onsuccess = () => {
+        resolve(request.result || []);
+      };
+
+      request.onerror = () => {
+        reject(request.error);
+      };
+
+    });
+
+    db.close();
+
+    preview.innerHTML = '';
+
+    if(!records.length){
+
+      preview.textContent =
+        'No saved reference media yet.';
+
+      return;
+    }
+
+    records.forEach(record => {
+
+      if(!record.file) return;
+
+      const url =
+        URL.createObjectURL(record.file);
+
+      if(record.type === 'image'){
+
+        const title =
+          document.createElement('div');
+
+        title.className = 'small';
+
+        title.textContent =
+          `🖼️ Saved image: ${record.name}`;
+
+        const img =
+          document.createElement('img');
+
+        img.src = url;
+        img.alt = 'Saved reference image';
+
+        img.style.width = '100%';
+        img.style.maxHeight = '280px';
+        img.style.objectFit = 'contain';
+        img.style.marginTop = '10px';
+        img.style.borderRadius = '12px';
+
+        preview.appendChild(title);
+        preview.appendChild(img);
+
+        csReferenceImageURL = url;
+      }
+
+
+      if(record.type === 'video'){
+
+        const title =
+          document.createElement('div');
+
+        title.className = 'small';
+        title.style.marginTop = '14px';
+
+        title.textContent =
+          `🎥 Saved video: ${record.name}`;
+
+        const video =
+          document.createElement('video');
+
+        video.src = url;
+        video.controls = true;
+        video.playsInline = true;
+
+        video.style.width = '100%';
+        video.style.maxHeight = '300px';
+        video.style.marginTop = '10px';
+        video.style.borderRadius = '12px';
+
+        preview.appendChild(title);
+        preview.appendChild(video);
+
+        csReferenceVideoURL = url;
+      }
+
+    });
+
+  }catch(error){
+
+    console.error(error);
+
+  }
+
+  }
   }
 
   /* ================================
