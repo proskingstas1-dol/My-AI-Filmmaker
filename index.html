@@ -895,6 +895,189 @@ ${shot.prompt||''}`;
   installLists();
   v4RefreshScenes();
 })();
+
+  /* ================================
+   CREATION STUDIO — STEP 1
+   Scene + Shot Connection
+================================ */
+
+function csRefreshScenes(){
+  const select = $('csSceneSelect');
+  if(!select) return;
+
+  select.innerHTML = '<option value="">Select a scene</option>';
+
+  p.scenes.forEach((scene, index) => {
+    const option = document.createElement('option');
+    option.value = index;
+    option.textContent = scene.name || `Scene ${index + 1}`;
+    select.appendChild(option);
+  });
+
+  csRefreshShots();
+}
+
+function csRefreshShots(){
+  const sceneSelect = $('csSceneSelect');
+  const shotSelect = $('csShotSelect');
+
+  if(!sceneSelect || !shotSelect) return;
+
+  shotSelect.innerHTML = '<option value="">Select a shot</option>';
+
+  if(sceneSelect.value === '') return;
+
+  const scene = p.scenes[Number(sceneSelect.value)];
+  if(!scene) return;
+
+  const shots = Array.isArray(scene.shots) ? scene.shots : [];
+
+  shots.forEach((shot, index) => {
+    const option = document.createElement('option');
+    option.value = index;
+
+    const type = shot.type || 'Shot';
+    const subject = shot.subject || '';
+
+    option.textContent =
+      subject
+        ? `${index + 1}. ${type} — ${subject}`
+        : `${index + 1}. ${type}`;
+
+    shotSelect.appendChild(option);
+  });
+}
+
+function csLoadSelectedShot(){
+  const sceneSelect = $('csSceneSelect');
+  const shotSelect = $('csShotSelect');
+
+  if(!sceneSelect || !shotSelect) return;
+
+  const scene = p.scenes[Number(sceneSelect.value)];
+  if(!scene) return;
+
+  const shots = Array.isArray(scene.shots) ? scene.shots : [];
+  const shot = shots[Number(shotSelect.value)];
+
+  if(!shot) return;
+
+  $('csPrompt').value =
+`Create this cinematic shot.
+
+Scene:
+${scene.name || 'Untitled scene'}
+
+Shot Type:
+${shot.type || 'Medium Shot'}
+
+Camera Angle:
+${shot.angle || 'Eye Level'}
+
+Camera Movement:
+${shot.movement || 'Locked-Off'}
+
+Framing:
+${shot.framing || 'Medium Framing'}
+
+Subject:
+${shot.subject || 'Main subject'}
+
+Action:
+${shot.action || scene.action || 'Perform the scene action naturally.'}
+
+Environment:
+${shot.environment || scene.location || 'Scene environment'}
+
+Lighting:
+${shot.lighting || scene.light || 'Natural cinematic lighting'}
+
+Visual Style:
+${shot.style || 'Photorealistic Cinematic'}
+
+Duration:
+${shot.duration || '4–6 seconds'}
+
+Dialogue / Audio:
+${shot.dialogue || scene.dialogue || 'Natural ambient sound'}
+
+Continuity:
+${shot.continuity || 'Preserve continuity with the surrounding shots.'}
+
+Generation Direction:
+${shot.prompt || ''}`;
+
+  $('csStyle').value =
+    shot.style || 'Photorealistic Cinematic';
+
+  if($('csDuration')){
+    const duration = shot.duration;
+    const option = [...$('csDuration').options]
+      .find(o => o.value === duration);
+
+    if(option){
+      $('csDuration').value = duration;
+    }
+  }
+
+  toast('Shot loaded into Creation Studio');
+}
+
+function csHandleSceneChange(){
+  csRefreshShots();
+
+  const sceneSelect = $('csSceneSelect');
+  if(!sceneSelect || sceneSelect.value === '') return;
+
+  const scene = p.scenes[Number(sceneSelect.value)];
+  if(!scene) return;
+
+  $('csPrompt').value =
+`Create a cinematic scene.
+
+Scene:
+${scene.name || 'Untitled scene'}
+
+Location:
+${scene.location || 'Not specified'}
+
+Action:
+${scene.action || 'Perform the scene naturally.'}
+
+Lighting / Mood:
+${scene.light || 'Natural cinematic lighting'}
+
+Dialogue / Audio:
+${scene.dialogue || 'Natural ambient sound'}
+
+Camera:
+${scene.camera || 'Cinematic camera movement'}
+
+Visual Style:
+Photorealistic Cinematic with believable human movement and strong character continuity.`;
+
+  toast('Scene loaded into Creation Studio');
+}
+
+
+/* Connect Creation Studio controls */
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  const sceneSelect = $('csSceneSelect');
+  const shotSelect = $('csShotSelect');
+
+  if(sceneSelect){
+    sceneSelect.addEventListener('change', csHandleSceneChange);
+  }
+
+  if(shotSelect){
+    shotSelect.addEventListener('change', csLoadSelectedShot);
+  }
+
+  csRefreshScenes();
+
+});
 </script>
 </body>
 </html>
