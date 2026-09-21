@@ -89,7 +89,131 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:30px 10px}
 <div class="row"><button class="primary" onclick="buildPrompt()">Build prompt</button><button class="secondary" onclick="copyText('promptOut')">Copy</button></div>
 </div></section>
 
+<section id="creationStudio" class="panel">
 
+  <div class="card">
+    <h2>🎨 AI Creation Studio</h2>
+    <p class="small">
+      Create images and video concepts from your ideas, reference media, and
+      filmmaking direction.
+    </p>
+
+    <label>What are you creating?</label>
+    <select id="csOutputType">
+      <option value="image">🖼️ Image</option>
+      <option value="video">🎥 Video</option>
+    </select>
+
+    <label>Creation prompt</label>
+    <textarea id="csPrompt"
+      placeholder="Describe exactly what you want the image or video to look like..."></textarea>
+
+    <label>Creative instructions</label>
+    <textarea id="csInstructions"
+      placeholder="Tell the AI what to preserve, change, add, remove, or emphasize..."></textarea>
+  </div>
+
+  <div class="card">
+    <h2>📸 Reference Media</h2>
+
+    <p class="small">
+      Use your own photos or short videos to guide the creation.
+    </p>
+
+    <label>Reference image</label>
+    <input
+      id="csReferenceImage"
+      type="file"
+      accept="image/*">
+
+    <label>Reference video</label>
+    <input
+      id="csReferenceVideo"
+      type="file"
+      accept="video/*">
+
+    <div id="csMediaPreview" class="small">
+      No reference media selected.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🎬 Connect to Your Film</h2>
+
+    <label>Scene</label>
+    <select id="csSceneSelect">
+      <option value="">Select a scene</option>
+    </select>
+
+    <label>Shot</label>
+    <select id="csShotSelect">
+      <option value="">Select a shot</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <h2>🎞️ Visual Settings</h2>
+
+    <label>Visual style</label>
+    <select id="csStyle">
+      <option>Photorealistic Cinematic</option>
+      <option>Naturalistic Film</option>
+      <option>Documentary Realism</option>
+      <option>Cinematic Realism</option>
+      <option>Warm Cinematic</option>
+      <option>Moody Cinematic</option>
+      <option>Intimate Cinematic</option>
+      <option>Epic Cinematic</option>
+      <option>Gritty Realistic</option>
+      <option>Clean Modern</option>
+    </select>
+
+    <label>Aspect ratio</label>
+    <select id="csAspect">
+      <option>16:9 — Widescreen</option>
+      <option>9:16 — Vertical</option>
+      <option>1:1 — Square</option>
+      <option>4:3 — Classic</option>
+    </select>
+
+    <label>Video duration</label>
+    <select id="csDuration">
+      <option>2–3 seconds</option>
+      <option>3–4 seconds</option>
+      <option>4–6 seconds</option>
+      <option>6–8 seconds</option>
+      <option>8–10 seconds</option>
+      <option>10–12 seconds</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <h2>✨ Creation</h2>
+
+    <p class="small">
+      Your creation settings are prepared here. Actual AI generation will be
+      connected to an image/video generation model in the next stage.
+    </p>
+
+    <div class="row">
+      <button class="primary" onclick="csPrepareCreation()">
+        ✨ Prepare Creation
+      </button>
+
+      <button class="secondary" onclick="csSaveCreation()">
+        📦 Save to Assets
+      </button>
+    </div>
+
+    <textarea
+      id="csResult"
+      style="min-height:260px"
+      readonly
+      placeholder="Your generation-ready creation instructions will appear here..."></textarea>
+  </div>
+
+</section>
+ 
 <section id="assets" class="panel"><div class="card"><h2>📦 Assets</h2>
 <label>Asset name</label><input id="aname"><label>Type</label><select id="atype"><option>Image</option><option>Video</option><option>Audio</option><option>Other</option></select>
 <label>Notes / local file location</label><textarea id="anotes"></textarea><button class="primary" onclick="addAsset()">Add asset</button><div id="assetList"></div>
