@@ -1396,8 +1396,12 @@ later stage.`;
     $('csResult').value = result;
   }
 
+  csClearOutput();
+
+  csSetOutputPending();
+
   toast('AI creation package prepared');
-}
+  }
 
   /* ================================
    CREATION STUDIO — STEP 4B
