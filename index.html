@@ -1404,6 +1404,94 @@ later stage.`;
    Save Creation Package to Assets
 ================================ */
 
+  function csSetOutputStatus(message){
+
+  const status = $('csOutputStatus');
+
+  if(!status) return;
+
+  status.textContent = message || '🎬 No generated media yet.';
+}
+
+
+function csClearOutput(){
+
+  const preview = $('csOutputPreview');
+
+  if(!preview) return;
+
+  preview.innerHTML = '';
+
+  csSetOutputStatus('🎬 No generated media yet.');
+}
+
+
+function csShowOutputMedia(url, type){
+
+  const preview = $('csOutputPreview');
+
+  if(!preview || !url) return;
+
+  preview.innerHTML = '';
+
+  if(type === 'image'){
+
+    const img = document.createElement('img');
+
+    img.src = url;
+    img.alt = 'Generated creation';
+    img.style.width = '100%';
+    img.style.maxHeight = '520px';
+    img.style.objectFit = 'contain';
+    img.style.borderRadius = '14px';
+    img.style.display = 'block';
+
+    preview.appendChild(img);
+
+    csSetOutputStatus('✅ Image output ready.');
+    return;
+  }
+
+
+  if(type === 'video'){
+
+    const video = document.createElement('video');
+
+    video.src = url;
+    video.controls = true;
+    video.playsInline = true;
+    video.style.width = '100%';
+    video.style.maxHeight = '520px';
+    video.style.borderRadius = '14px';
+    video.style.display = 'block';
+
+    preview.appendChild(video);
+
+    csSetOutputStatus('✅ Video output ready.');
+    return;
+  }
+
+  csSetOutputStatus('⚠️ Unsupported output type.');
+}
+
+
+function csSetOutputPending(){
+
+  const preview = $('csOutputPreview');
+
+  if(preview){
+
+    preview.innerHTML = `
+      <div class="notice">
+        ⏳ Waiting for generated media...
+      </div>
+    `;
+  }
+
+  csSetOutputStatus(
+    '⏳ Generation is ready for an AI provider.'
+  );
+  }
 function csSaveCreation(){
 
   const result = $('csResult')?.value || '';
