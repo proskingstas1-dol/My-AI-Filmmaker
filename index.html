@@ -1425,6 +1425,16 @@ function csSaveCreation(){
       shots[Number(shotSelect.value)] || null;
   }
 
+  const sceneIndex =
+    sceneSelect && sceneSelect.value !== ''
+      ? Number(sceneSelect.value)
+      : null;
+
+  const shotIndex =
+    shotSelect && shotSelect.value !== ''
+      ? Number(shotSelect.value)
+      : null;
+
   const sceneName =
     scene?.name || 'Unassigned Scene';
 
@@ -1438,9 +1448,33 @@ function csSaveCreation(){
 
   const asset = {
     name: assetName,
-    type: outputType === 'video'
-      ? 'Video'
-      : 'Image',
+
+    type:
+      outputType === 'video'
+        ? 'Video'
+        : 'Image',
+
+    film:
+      p.title || 'My Film',
+
+    scene:
+      sceneName,
+
+    sceneIndex:
+      sceneIndex,
+
+    shot:
+      shotName,
+
+    shotIndex:
+      shotIndex,
+
+    source:
+      'Creation Studio',
+
+    status:
+      'Generation Package',
+
     notes:
 `🎬 CREATION PACKAGE
 
@@ -1453,6 +1487,12 @@ ${sceneName}
 SHOT
 ${shotName}
 
+SOURCE
+Creation Studio
+
+STATUS
+Generation Package
+
 ${result}`
   };
 
@@ -1464,7 +1504,7 @@ ${result}`
   toast('Creation saved to Assets');
 
   openTab('assets');
-}
+  }
 </script>
 </body>
 </html>
