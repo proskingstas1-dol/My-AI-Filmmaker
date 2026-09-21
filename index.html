@@ -1298,6 +1298,88 @@ later stage.`;
 
   toast('Creation package prepared');
   }
+
+  /* ================================
+   CREATION STUDIO — STEP 4B
+   Save Creation Package to Assets
+================================ */
+
+function csSaveCreation(){
+
+  const result = $('csResult')?.value || '';
+
+  if(!result){
+    toast('Prepare the creation first');
+    return;
+  }
+
+  const outputType =
+    $('csOutputType')?.value || 'image';
+
+  const sceneSelect =
+    $('csSceneSelect');
+
+  const shotSelect =
+    $('csShotSelect');
+
+  let scene = null;
+  let shot = null;
+
+  if(sceneSelect && sceneSelect.value !== ''){
+    scene =
+      p.scenes[Number(sceneSelect.value)] || null;
+  }
+
+  if(scene && shotSelect && shotSelect.value !== ''){
+    const shots =
+      Array.isArray(scene.shots)
+        ? scene.shots
+        : [];
+
+    shot =
+      shots[Number(shotSelect.value)] || null;
+  }
+
+  const sceneName =
+    scene?.name || 'Unassigned Scene';
+
+  const shotName =
+    shot
+      ? `${shot.type || 'Shot'} — ${shot.subject || 'Main subject'}`
+      : 'Unassigned Shot';
+
+  const assetName =
+    `${p.title || 'My Film'} — ${sceneName} — ${shotName}`;
+
+  const asset = {
+    name: assetName,
+    type: outputType === 'video'
+      ? 'Video'
+      : 'Image',
+    notes:
+`🎬 CREATION PACKAGE
+
+FILM
+${p.title || 'My Film'}
+
+SCENE
+${sceneName}
+
+SHOT
+${shotName}
+
+${result}`
+  };
+
+  p.assets.push(asset);
+
+  save();
+  renderAssets();
+
+  toast('Creation saved to Assets');
+
+  openTab('assets');
+}
 </script>
 </body>
 </html>
