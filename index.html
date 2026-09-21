@@ -187,30 +187,24 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:30px 10px}
     </select>
   </div>
 
-  <div class="card">
-    <h2>✨ Creation</h2>
+<div class="card">
+  <h2>✨ Creation</h2>
 
-    <p class="small">
-      Your creation settings are prepared here. Actual AI generation will be
-      connected to an image/video generation model in the next stage.
-    </p>
+  <p class="small">
+    Prepare a complete generation package from your film, scene, shot,
+    creative direction, and reference media.
+  </p>
 
-    <div class="row">
-      <button class="primary" onclick="csPrepareCreation()">
-        ✨ Prepare Creation
-      </button>
+  <button class="primary" onclick="csPrepareCreation()">
+    ✨ Prepare Creation
+  </button>
 
-      <button class="secondary" onclick="csSaveCreation()">
-        📦 Save to Assets
-      </button>
-    </div>
-
-    <textarea
-      id="csResult"
-      style="min-height:260px"
-      readonly
-      placeholder="Your generation-ready creation instructions will appear here..."></textarea>
-  </div>
+  <textarea
+    id="csResult"
+    style="min-height:320px;margin-top:12px"
+    readonly
+    placeholder="Your generation-ready creation package will appear here..."></textarea>
+</div>
 
 </section>
  
