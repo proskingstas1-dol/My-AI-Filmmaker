@@ -1103,6 +1103,39 @@ document.addEventListener('DOMContentLoaded', () => {
    Reference Media Preview
 ================================ */
 
+  // 4J — Persistent media storage foundation
+const CS_MEDIA_DB = 'my_ai_filmmaker_media';
+const CS_MEDIA_STORE = 'reference_media';
+
+function csOpenMediaDB(){
+
+  return new Promise((resolve, reject) => {
+
+    const request =
+      indexedDB.open(CS_MEDIA_DB, 1);
+
+    request.onupgradeneeded = event => {
+
+      const db = event.target.result;
+
+      if(!db.objectStoreNames.contains(CS_MEDIA_STORE)){
+        db.createObjectStore(
+          CS_MEDIA_STORE,
+          { keyPath: 'id' }
+        );
+      }
+    };
+
+    request.onsuccess = () => {
+      resolve(request.result);
+    };
+
+    request.onerror = () => {
+      reject(request.error);
+    };
+
+  });
+  }
 let csReferenceImageURL = '';
 let csReferenceVideoURL = '';
 
