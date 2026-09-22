@@ -1800,6 +1800,121 @@ function csCreateGeneratedMediaRecord(data = {}){
   status.textContent = message || '🎬 No generated media yet.';
 }
 
+  /* =================================
+   4K — GENERATED MEDIA LIBRARY
+   Render saved generated records
+================================ */
+
+function csRenderGeneratedMediaLibrary(){
+
+  const library =
+    $('csGeneratedMediaLibrary');
+
+  if(!library) return;
+
+  const media =
+    csGetGeneratedMedia();
+
+  if(!media.length){
+
+    library.innerHTML = `
+      <div class="empty">
+        No generated media records yet.
+      </div>
+    `;
+
+    return;
+  }
+
+  library.innerHTML = '';
+
+  [...media]
+    .reverse()
+    .forEach(record => {
+
+      const item =
+        document.createElement('div');
+
+      item.className = 'item';
+
+      const scene =
+        Number.isInteger(record.sceneIndex)
+          ? p.scenes[record.sceneIndex]
+          : null;
+
+      const shot =
+        scene &&
+        Array.isArray(scene.shots) &&
+        Number.isInteger(record.shotIndex)
+          ? scene.shots[record.shotIndex]
+          : null;
+
+      const sceneName =
+        scene?.name || 'Unassigned Scene';
+
+      const shotName =
+        shot
+          ? `${shot.type || 'Shot'} — ${shot.subject || 'Main subject'}`
+          : 'Unassigned Shot';
+
+      const created =
+        record.createdAt
+          ? new Date(record.createdAt).toLocaleString()
+          : 'Unknown date';
+
+      item.innerHTML = `
+
+        <strong>
+          ${record.type === 'video'
+            ? '🎥 Video'
+            : '🖼️ Image'}
+        </strong>
+
+        <div class="small">
+          Scene: ${esc(sceneName)}
+        </div>
+
+        <div class="small">
+          Shot: ${esc(shotName)}
+        </div>
+
+        <div class="small">
+          Status: ${esc(record.status || 'Unknown')}
+        </div>
+
+        <div class="small">
+          Created: ${esc(created)}
+        </div>
+
+        ${
+          record.resultUrl
+            ? `
+              <div style="margin-top:10px">
+                <button
+                  class="secondary"
+                  onclick="csShowOutputMedia(
+                    '${record.resultUrl}',
+                    '${record.type}'
+                  )"
+                >
+                  ▶️ View Result
+                </button>
+              </div>
+            `
+            : `
+              <div class="notice" style="margin-top:10px">
+                ⏳ No generated result yet.
+              </div>
+            `
+        }
+
+      `;
+
+      library.appendChild(item);
+
+    });
+
+}
 
 function csClearOutput(){
 
