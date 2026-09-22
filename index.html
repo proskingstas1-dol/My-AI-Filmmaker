@@ -1966,28 +1966,38 @@ function csRenderGeneratedMediaLibrary(){
         <div class="small">
           Created: ${esc(created)}
         </div>
+${
+  record.resultUrl
+    ? `
+      <div style="margin-top:10px">
+        <button
+          class="secondary"
+          onclick="csShowOutputMedia(
+            '${record.resultUrl}',
+            '${record.type}'
+          )"
+        >
+          ▶️ View Result
+        </button>
+      </div>
+    `
+    : `
+      <div style="margin-top:10px">
+        <button
+          class="secondary"
+          onclick="csSelectGeneratedMediaRecord(
+            '${record.id}'
+          )"
+        >
+          🎯 Use This Creation
+        </button>
+      </div>
 
-        ${
-          record.resultUrl
-            ? `
-              <div style="margin-top:10px">
-                <button
-                  class="secondary"
-                  onclick="csShowOutputMedia(
-                    '${record.resultUrl}',
-                    '${record.type}'
-                  )"
-                >
-                  ▶️ View Result
-                </button>
-              </div>
-            `
-            : `
-              <div class="notice" style="margin-top:10px">
-                ⏳ No generated result yet.
-              </div>
-            `
-        }
+      <div class="notice" style="margin-top:10px">
+        ⏳ No generated result yet.
+      </div>
+    `
+  }
 
       `;
 
