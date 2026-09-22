@@ -321,8 +321,9 @@ function openTab(tab){
  if(tab==='shotDirector')v4RefreshScenes();
 
  if(tab==='creationStudio'){
-   csRefreshScenes();
- }
+  csRefreshScenes();
+  csRenderGeneratedMediaLibrary();
+  }
 }
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>openTab(b.dataset.tab));
 
