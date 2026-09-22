@@ -1914,6 +1914,52 @@ function csSelectGeneratedMediaRecord(id){
 
   return record;
   }
+
+  /* =================================
+   4L-5 — ACTIVE GENERATION JOB
+================================= */
+
+function csPrepareGenerationJob(){
+
+  const id =
+    window.csSelectedGeneratedMediaId;
+
+  if(!id){
+    toast('Select a creation first');
+    return null;
+  }
+
+  const media =
+    csGetGeneratedMedia();
+
+  const record =
+    media.find(item =>
+      item.id === id
+    );
+
+  if(!record){
+    toast('Selected creation not found');
+    return null;
+  }
+
+  record.status =
+    'generation_ready';
+
+  record.updatedAt =
+    Date.now();
+
+  csSaveGeneratedMedia(media);
+
+  csSetOutputStatus(
+    '🚀 Generation job ready for an AI provider.'
+  );
+
+  csRenderGeneratedMediaLibrary();
+
+  toast('Generation job prepared');
+
+  return record;
+  }
   function csAttachGeneratedOutput(
   id,
   resultUrl,
