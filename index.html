@@ -1707,6 +1707,50 @@ function csGetGeneratedMedia(){
 
 }
 
+  /* =================================
+   4L — ACTUAL GENERATED OUTPUT
+   Update a generated media record
+================================ */
+
+function csUpdateGeneratedMediaRecord(id, data = {}){
+
+  const media =
+    csGetGeneratedMedia();
+
+  const index =
+    media.findIndex(record =>
+      record.id === id
+    );
+
+  if(index === -1){
+    return null;
+  }
+
+  const record =
+    media[index];
+
+  if(data.status !== undefined){
+    record.status = data.status;
+  }
+
+  if(data.resultUrl !== undefined){
+    record.resultUrl = data.resultUrl;
+  }
+
+  if(data.resultName !== undefined){
+    record.resultName = data.resultName;
+  }
+
+  record.updatedAt =
+    Date.now();
+
+  media[index] =
+    record;
+
+  csSaveGeneratedMedia(media);
+
+  return record;
+}
 
 function csSaveGeneratedMedia(media){
 
