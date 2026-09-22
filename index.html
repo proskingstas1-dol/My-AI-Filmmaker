@@ -1928,7 +1928,7 @@ function csSelectGeneratedMediaRecord(id){
    4L-5 — ACTIVE GENERATION JOB
 ================================= */
 
-function csPrepareGenerationJob(){
+async function csPrepareGenerationJob(){
 
   const id =
     window.csSelectedGeneratedMediaId;
@@ -1960,46 +1960,66 @@ function csPrepareGenerationJob(){
   csSaveGeneratedMedia(media);
 
   csSetOutputStatus(
-    '🚀 Generation job ready for an AI provider.'
+    '🔄 Connecting to generation backend...'
   );
 
   csRenderGeneratedMediaLibrary();
 
-  toast('Generation job prepared');
+  try{
 
-  return record;
-  }
-  function csAttachGeneratedOutput(
-  id,
-  resultUrl,
-  resultName = ''
-){
+    const response =
+      await fetch('/api/generate',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json'
+        },
+        body:JSON.stringify({
+          id:record.id,
+          type:record.type,
+          prompt:record.prompt,
+          instructions:record.instructions,
+          style:record.style,
+          aspect:record.aspect,
+          duration:record.duration
+        })
+      });
 
-  const record =
-    csUpdateGeneratedMediaRecord(
-      id,
-      {
-        status: 'generated',
-        resultUrl: resultUrl,
-        resultName: resultName
-      }
+    const data =
+      await response.json();
+
+    if(!response.ok){
+      throw new Error(
+        data.error ||
+        'Generation backend request failed.'
+      );
+    }
+
+    csSetOutputStatus(
+      '✅ Generation backend connected.'
     );
 
-  if(!record){
-    toast('Generated media record not found');
+    toast(
+      data.message ||
+      'Backend connected'
+    );
+
+    return data;
+
+  }catch(error){
+
+    console.error(error);
+
+    csSetOutputStatus(
+      '❌ Could not connect to generation backend.'
+    );
+
+    toast(
+      'Backend connection failed'
+    );
+
     return null;
   }
-
-  csRenderGeneratedMediaLibrary();
-
-  csShowOutputMedia(
-    record.resultUrl,
-    record.type
-  );
-
-  csSetOutputStatus(
-    '✅ Generated output connected.'
-  );
+  }
 
   return record;
   }
