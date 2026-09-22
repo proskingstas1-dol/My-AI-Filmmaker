@@ -1832,7 +1832,88 @@ function csCreateGeneratedMediaRecord(data = {}){
   return record;
 
      }
+/* =================================
+   4L-4 — SELECT GENERATED CREATION
+================================= */
 
+function csSelectGeneratedMediaRecord(id){
+
+  const media =
+    csGetGeneratedMedia();
+
+  const record =
+    media.find(item =>
+      item.id === id
+    );
+
+  if(!record){
+    toast('Generated media record not found');
+    return null;
+  }
+
+  window.csSelectedGeneratedMediaId =
+    record.id;
+
+  if($('csOutputType')){
+    $('csOutputType').value =
+      record.type || 'image';
+  }
+
+  if($('csPrompt')){
+    $('csPrompt').value =
+      record.prompt || '';
+  }
+
+  if($('csInstructions')){
+    $('csInstructions').value =
+      record.instructions || '';
+  }
+
+  if($('csStyle')){
+    $('csStyle').value =
+      record.style ||
+      $('csStyle').value;
+  }
+
+  if($('csAspect')){
+    $('csAspect').value =
+      record.aspect ||
+      $('csAspect').value;
+  }
+
+  if($('csDuration') && record.duration){
+    $('csDuration').value =
+      record.duration;
+  }
+
+  if(
+    $('csSceneSelect') &&
+    Number.isInteger(record.sceneIndex)
+  ){
+    $('csSceneSelect').value =
+      String(record.sceneIndex);
+
+    csRefreshShots();
+
+    if(
+      $('csShotSelect') &&
+      Number.isInteger(record.shotIndex)
+    ){
+      $('csShotSelect').value =
+        String(record.shotIndex);
+
+      csLoadSelectedShot();
+    }
+  }
+
+  csSetOutputStatus(
+    '🎯 Creation selected and loaded into Creation Studio.'
+  );
+
+  toast('Creation selected');
+
+  return record;
+  }
   function csAttachGeneratedOutput(
   id,
   resultUrl,
