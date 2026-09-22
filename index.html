@@ -1967,6 +1967,30 @@ Generation Package
 ${result}`
   };
 
+    /* ================================
+     4K — LINK ASSET TO GENERATED MEDIA
+  ================================= */
+
+  const generatedMedia =
+    csGetGeneratedMedia();
+
+  const linkedGeneratedMedia =
+    [...generatedMedia]
+      .reverse()
+      .find(media =>
+        media.status === 'prepared' &&
+        media.type === outputType &&
+        media.sceneIndex === sceneIndex &&
+        media.shotIndex === shotIndex
+      );
+
+  if(linkedGeneratedMedia){
+
+    asset.generatedMediaId =
+      linkedGeneratedMedia.id;
+
+  }
+
   p.assets.push(asset);
 
   save();
@@ -1979,7 +2003,8 @@ ${result}`
   toast('Creation saved to Assets');
 
   openTab('assets');
-  }
+  };
+  
 </script>
 </body>
 </html>
