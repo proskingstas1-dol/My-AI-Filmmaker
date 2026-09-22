@@ -1832,6 +1832,41 @@ function csCreateGeneratedMediaRecord(data = {}){
   return record;
 
      }
+
+  function csAttachGeneratedOutput(
+  id,
+  resultUrl,
+  resultName = ''
+){
+
+  const record =
+    csUpdateGeneratedMediaRecord(
+      id,
+      {
+        status: 'generated',
+        resultUrl: resultUrl,
+        resultName: resultName
+      }
+    );
+
+  if(!record){
+    toast('Generated media record not found');
+    return null;
+  }
+
+  csRenderGeneratedMediaLibrary();
+
+  csShowOutputMedia(
+    record.resultUrl,
+    record.type
+  );
+
+  csSetOutputStatus(
+    '✅ Generated output connected.'
+  );
+
+  return record;
+  }
   /* ================================
    CREATION STUDIO — STEP 4B
    Save Creation Package to Assets
