@@ -756,6 +756,28 @@ function projectLibraryOpen(id){
   );
 
   }
+  function projectLibraryNew(){
+
+  projectLibrarySetActiveId('');
+
+  p = {
+    title:'',
+    idea:'',
+    story:{},
+    characters:[],
+    scenes:[],
+    assets:[]
+  };
+
+  save();
+
+  load();
+
+  projectLibraryRefresh();
+
+  toast('New project started');
+
+  }
 
 const $=id=>document.getElementById(id);
 
