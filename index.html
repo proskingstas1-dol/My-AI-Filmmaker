@@ -271,13 +271,94 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:30px 10px}
 <label>Notes / local file location</label><textarea id="anotes"></textarea><button class="primary" onclick="addAsset()">Add asset</button><div id="assetList"></div>
 </div></section>
 
-<section id="project" class="panel"><div class="card"><h2>💾 Project backup</h2>
-<p class="small">Everything you enter is stored locally in this browser.</p>
-<div class="row"><button class="primary" onclick="exportProject()">Export project</button><button class="secondary" onclick="document.getElementById('importFile').click()">Import project</button></div>
-<input type="file" id="importFile" accept=".json" hidden onchange="importProject(event)">
-<h3>Reset</h3><button class="secondary" onclick="resetProject()">Clear this project</button>
-</div>
-<div class="card"><h2>About this version</h2><p class="small">Version 3 keeps the existing filmmaking workspace and adds a Character Bible + Character Consistency layer to the Director and prompt builder. It does not generate AI video by itself.</p></div>
+<section id="project" class="panel">
+
+  <div class="card">
+    <h2>📚 Project Library</h2>
+
+    <p class="small">
+      Save and organize your filmmaking projects on this device.
+      Your existing active project and backup system remain available.
+    </p>
+
+    <div class="row">
+      <button class="primary" onclick="projectLibrarySaveCurrent()">
+        💾 Save Current Project
+      </button>
+
+      <button class="secondary" onclick="projectLibraryRefresh()">
+        🔄 Refresh Library
+      </button>
+    </div>
+
+    <div
+      id="projectLibraryList"
+      style="margin-top:14px"
+    >
+      <div class="empty">
+        No saved projects yet.
+      </div>
+    </div>
+  </div>
+
+
+  <div class="card">
+    <h2>💾 Project Backup</h2>
+
+    <p class="small">
+      Everything you enter is stored locally in this browser.
+    </p>
+
+    <div class="row">
+      <button
+        class="primary"
+        onclick="exportProject()"
+      >
+        Export project
+      </button>
+
+      <button
+        class="secondary"
+        onclick="document.getElementById('importFile').click()"
+      >
+        Import project
+      </button>
+    </div>
+
+    <input
+      type="file"
+      id="importFile"
+      accept=".json"
+      hidden
+      onchange="importProject(event)"
+    >
+
+    <h3>Reset</h3>
+
+    <button
+      class="secondary"
+      onclick="resetProject()"
+    >
+      Clear this project
+    </button>
+  </div>
+
+
+  <div class="card">
+    <h2>ℹ️ About this version</h2>
+
+    <p class="small">
+      Version 3 keeps the existing filmmaking workspace and adds a
+      Character Bible + Character Consistency layer to the Director
+      and prompt builder.
+    </p>
+
+    <p class="small">
+      The Project Library is being added so completed filmmaking
+      projects can be saved, reopened and reviewed from this interface.
+    </p>
+  </div>
+
 </section>
 
 <section id="director" class="panel">
