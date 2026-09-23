@@ -171,18 +171,49 @@ export default async function handler(req, res) {
       getProvider(requestedProvider);
 
 
-    if (!provider) {
+    if (provider.id === 'gemini') {
 
-      return res.status(400).json({
-        ok: false,
-        error: 'Requested AI provider is not configured.',
-        requestedProvider,
-        availableProviders:
-          getAvailableProviders()
-      });
+  const result =
+    await generateWithGemini(body);
 
-    }
+  return res.status(200).json({
 
+    ok: true,
+
+    gateway: {
+      connected: true,
+      provider: provider.id,
+      providerName: provider.name,
+      providerType: provider.type
+    },
+
+    request: {
+      id: body.id || null,
+      type: body.type || 'image',
+      prompt: body.prompt || '',
+      instructions: body.instructions || '',
+      style: body.style || '',
+      aspect: body.aspect || '',
+      duration: body.duration || ''
+    },
+
+    result: {
+      resultUrl:
+        result.resultUrl,
+
+      resultName:
+        result.resultName
+    },
+
+    message:
+      'Gemini image generation completed.',
+
+    availableProviders:
+      getAvailableProviders()
+
+  });
+
+  }
 
     if (!provider.enabled) {
 
