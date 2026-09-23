@@ -1986,15 +1986,15 @@ async function csPrepareGenerationJob(){
           'Content-Type':'application/json'
         },
         body:JSON.stringify({
-          id:record.id,
-          type:record.type,
-          prompt:record.prompt,
-          instructions:record.instructions,
-          style:record.style,
-          aspect:record.aspect,
-          duration:record.duration
-        })
-      });
+  id:record.id,
+  type:record.type,
+  provider:$('csProvider')?.value || 'test',
+  prompt:record.prompt,
+  instructions:record.instructions,
+  style:record.style,
+  aspect:record.aspect,
+  duration:record.duration
+})
 
     const data =
       await response.json();
