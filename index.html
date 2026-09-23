@@ -666,12 +666,23 @@ function projectLibraryRefresh(){
 
         </div>
 
-        <div
+                <div
           class="small"
           style="margin-top:8px"
         >
           Last saved: ${esc(updated)}
         </div>
+
+        <div style="margin-top:12px">
+          <button
+            class="secondary"
+            onclick="projectLibraryOpen('${project.id}')"
+          >
+            📂 Open Project
+          </button>
+        </div>
+
+      `;
 
       `;
 
