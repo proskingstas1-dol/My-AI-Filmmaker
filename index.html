@@ -405,6 +405,282 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:30px 10px}
 const K='my_ai_filmmaker_v1';
 let p=JSON.parse(localStorage.getItem(K)||'{"title":"","idea":"","story":{},"characters":[],"scenes":[],"assets":[]}');
 
+/* =================================
+   PROJECT LIBRARY — STEP 2
+   Save multiple filmmaking projects
+================================= */
+
+const PROJECT_LIBRARY_KEY =
+  'my_ai_filmmaker_project_library_v1';
+
+const ACTIVE_PROJECT_LIBRARY_ID_KEY =
+  'my_ai_filmmaker_active_project_id_v1';
+
+function projectLibraryGet(){
+
+  try{
+
+    const data =
+      JSON.parse(
+        localStorage.getItem(PROJECT_LIBRARY_KEY) || '[]'
+      );
+
+    return Array.isArray(data) ? data : [];
+
+  }catch(error){
+
+    console.error(error);
+
+    return [];
+
+  }
+
+}
+
+function projectLibrarySet(list){
+
+  localStorage.setItem(
+    PROJECT_LIBRARY_KEY,
+    JSON.stringify(list)
+  );
+
+}
+
+function projectLibraryGetActiveId(){
+
+  return localStorage.getItem(
+    ACTIVE_PROJECT_LIBRARY_ID_KEY
+  ) || '';
+
+}
+
+function projectLibrarySetActiveId(id){
+
+  if(id){
+
+    localStorage.setItem(
+      ACTIVE_PROJECT_LIBRARY_ID_KEY,
+      id
+    );
+
+  }else{
+
+    localStorage.removeItem(
+      ACTIVE_PROJECT_LIBRARY_ID_KEY
+    );
+
+  }
+
+}
+
+function projectLibrarySaveCurrent(){
+
+  const list =
+    projectLibraryGet();
+
+  const now =
+    Date.now();
+
+  const title =
+    (p.title || 'Untitled Project').trim();
+
+  const snapshot =
+    JSON.parse(
+      JSON.stringify(p)
+    );
+
+  const activeId =
+    projectLibraryGetActiveId();
+
+  let project =
+    list.find(item =>
+      item.id === activeId
+    );
+
+  if(project){
+
+    project.title =
+      title;
+
+    project.updatedAt =
+      now;
+
+    project.data =
+      snapshot;
+
+    toast(
+      'Project updated in library'
+    );
+
+  }else{
+
+    const nextNumber =
+      list.reduce(
+        (max,item) =>
+          Math.max(
+            max,
+            Number(item.number) || 0
+          ),
+        0
+      ) + 1;
+
+    project = {
+
+      id:
+        'project_' +
+        now +
+        '_' +
+        Math.random()
+          .toString(36)
+          .slice(2,8),
+
+      number:
+        nextNumber,
+
+      title:
+        title,
+
+      createdAt:
+        now,
+
+      updatedAt:
+        now,
+
+      data:
+        snapshot
+
+    };
+
+    list.push(project);
+
+    projectLibrarySetActiveId(
+      project.id
+    );
+
+    toast(
+      `Project ${project.number} saved`
+    );
+
+  }
+
+  projectLibrarySet(list);
+
+  projectLibraryRefresh();
+
+}
+
+function projectLibraryRefresh(){
+
+  const container =
+    $('projectLibraryList');
+
+  if(!container) return;
+
+  const list =
+    projectLibraryGet();
+
+  if(!list.length){
+
+    container.innerHTML = `
+      <div class="empty">
+        No saved projects yet.
+      </div>
+    `;
+
+    return;
+
+  }
+
+  container.innerHTML = '';
+
+  [...list]
+    .sort(
+      (a,b) =>
+        (b.updatedAt || 0) -
+        (a.updatedAt || 0)
+    )
+    .forEach(project => {
+
+      const item =
+        document.createElement('div');
+
+      item.className =
+        'item';
+
+      const data =
+        project.data || {};
+
+      const characters =
+        Array.isArray(data.characters)
+          ? data.characters.length
+          : 0;
+
+      const scenes =
+        Array.isArray(data.scenes)
+          ? data.scenes.length
+          : 0;
+
+      const assets =
+        Array.isArray(data.assets)
+          ? data.assets.length
+          : 0;
+
+      const idea =
+        data.idea ||
+        'No project idea saved yet.';
+
+      const updated =
+        project.updatedAt
+          ? new Date(
+              project.updatedAt
+            ).toLocaleString()
+          : 'Unknown';
+
+      item.innerHTML = `
+
+        <strong>
+          🎬 Project ${esc(
+            String(project.number || '')
+          )} — ${esc(
+            project.title || 'Untitled Project'
+          )}
+        </strong>
+
+        <div class="small" style="margin-top:6px">
+          ${esc(idea)}
+        </div>
+
+        <div style="margin-top:8px">
+
+          <span class="badge">
+            👤 ${characters} Characters
+          </span>
+
+          <span class="badge">
+            🎞️ ${scenes} Scenes
+          </span>
+
+          <span class="badge">
+            📦 ${assets} Assets
+          </span>
+
+        </div>
+
+        <div
+          class="small"
+          style="margin-top:8px"
+        >
+          Last saved: ${esc(updated)}
+        </div>
+
+      `;
+
+      container.appendChild(item);
+
+    });
+
+}
+
 const $=id=>document.getElementById(id);
 
 function save(){localStorage.setItem(K,JSON.stringify(p))}
