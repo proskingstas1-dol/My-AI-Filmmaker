@@ -281,15 +281,19 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:30px 10px}
       Your existing active project and backup system remain available.
     </p>
 
-    <div class="row">
-      <button class="primary" onclick="projectLibrarySaveCurrent()">
-        💾 Save Current Project
-      </button>
+<div class="row">
+  <button class="primary" onclick="projectLibrarySaveCurrent()">
+    💾 Save Current Project
+  </button>
 
-      <button class="secondary" onclick="projectLibraryRefresh()">
-        🔄 Refresh Library
-      </button>
-    </div>
+  <button class="secondary" onclick="projectLibraryRefresh()">
+    🔄 Refresh Library
+  </button>
+
+  <button class="secondary" onclick="projectLibraryNew()">
+    ➕ New Project
+  </button>
+</div>
 
     <div
       id="projectLibraryList"
