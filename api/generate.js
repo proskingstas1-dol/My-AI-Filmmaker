@@ -170,6 +170,18 @@ export default async function handler(req, res) {
     const provider =
       getProvider(requestedProvider);
 
+    if (!provider.enabled) {
+
+  return res.status(400).json({
+    ok: false,
+    error: 'Requested AI provider is currently disabled.',
+    provider: provider.id,
+    availableProviders:
+      getAvailableProviders()
+  });
+
+    }
+
 
     if (provider.id === 'gemini') {
 
