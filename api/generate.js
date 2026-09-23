@@ -45,6 +45,92 @@ function getProvider(providerId) {
 }
 
 
+async function generateWithGemini(body) {
+
+  const apiKey =
+    process.env.GEMINI_API_KEY;
+
+  if (!apiKey) {
+
+    throw new Error(
+      'GEMINI_API_KEY is not configured.'
+    );
+
+  }
+
+  const prompt = [
+    body.prompt || '',
+    body.instructions || '',
+    body.style
+      ? `Visual style: ${body.style}`
+      : '',
+    body.aspect
+      ? `Aspect ratio: ${body.aspect}`
+      : ''
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+
+  const response =
+    await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/interactions',
+      {
+        method: 'POST',
+
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey
+        },
+
+        body: JSON.stringify({
+          model: 'gemini-3.1-flash-image',
+
+          input: prompt,
+
+          response_format: {
+            type: 'image',
+            mime_type: 'image/png',
+            aspect_ratio:
+              body.aspect || '1:1'
+          }
+        })
+      }
+    );
+
+  const data =
+    await response.json();
+
+  if (!response.ok) {
+
+    throw new Error(
+      data?.error?.message ||
+      'Gemini image generation failed.'
+    );
+
+  }
+
+  const image =
+    data?.output_image;
+
+  if (!image?.data) {
+
+    throw new Error(
+      'Gemini returned no generated image.'
+    );
+
+  }
+
+  return {
+    resultUrl:
+      `data:${image.mime_type || 'image/png'};base64,${image.data}`,
+
+    resultName:
+      `gemini-${body.id || Date.now()}.png`
+  };
+
+}
+
+
 function getAvailableProviders() {
 
   return Object.values(AI_PROVIDERS)
