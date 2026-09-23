@@ -763,19 +763,68 @@ function projectLibraryOpen(id){
   p = {
     title:'',
     idea:'',
-    story:{},
-    characters:[],
-    scenes:[],
-    assets:[]
-  };
+function projectLibraryOpen(id){
+
+  const list =
+    projectLibraryGet();
+
+  const project =
+    list.find(item =>
+      item.id === id
+    );
+
+  if(!project){
+
+    toast('Project not found');
+
+    return;
+
+  }
+
+  p =
+    JSON.parse(
+      JSON.stringify(
+        project.data || {}
+      )
+    );
+
+  p.title =
+    p.title || '';
+
+  p.idea =
+    p.idea || '';
+
+  p.story =
+    p.story || {};
+
+  p.characters =
+    Array.isArray(p.characters)
+      ? p.characters
+      : [];
+
+  p.scenes =
+    Array.isArray(p.scenes)
+      ? p.scenes
+      : [];
+
+  p.assets =
+    Array.isArray(p.assets)
+      ? p.assets
+      : [];
+
+  projectLibrarySetActiveId(
+    project.id
+  );
 
   save();
 
   load();
 
-  projectLibraryRefresh();
+  openTab('dashboard');
 
-  toast('New project started');
+  toast(
+    `Project ${project.number} opened`
+  );
 
   }
 
