@@ -104,6 +104,18 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:30px 10px}
       <option value="video">🎥 Video</option>
     </select>
 
+    <label>AI Provider</label>
+<select id="csProvider">
+  <option value="test">🧪 Test Provider</option>
+  <option value="gemini">Google Gemini</option>
+  <option value="openai">OpenAI</option>
+  <option value="flux">FLUX</option>
+</select>
+
+<div class="notice" style="margin-top:10px">
+  The provider gateway controls which AI service generates your creation.
+  Providers that are not connected yet will remain unavailable.
+</div>
     <label>Creation prompt</label>
     <textarea id="csPrompt"
       placeholder="Describe exactly what you want the image or video to look like..."></textarea>
