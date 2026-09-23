@@ -10,7 +10,7 @@ const AI_PROVIDERS = {
     id: 'gemini',
     name: 'Google Gemini',
     type: 'image',
-    enabled: false
+    enabled: true
   },
 
   openai: {
