@@ -1,0 +1,9 @@
+{
+  "name": "my-ai-filmmaker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@google/genai": "2.23.0"
+  }
+}
