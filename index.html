@@ -695,6 +695,7 @@ function projectLibraryRefresh(){
 
 }
 
+  
   function projectLibraryOpen(id){
 
   const list =
@@ -758,7 +759,9 @@ function projectLibraryRefresh(){
     `Project ${project.number} opened`
   );
 
-    function projectLibraryDelete(id){
+}
+
+function projectLibraryDelete(id){
 
   const list =
     projectLibraryGet();
@@ -805,8 +808,6 @@ function projectLibraryRefresh(){
   toast(
     `Project ${project.number} deleted`
   );
-
-    }
 
 }
 
