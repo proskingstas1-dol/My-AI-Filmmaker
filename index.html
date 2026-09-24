@@ -2239,10 +2239,24 @@ function csGetGeneratedMedia(){
 
   try{
 
-    return JSON.parse(
-      localStorage.getItem(
-        GENERATED_MEDIA_KEY
-      ) || '[]'
+    const media =
+      JSON.parse(
+        localStorage.getItem(
+          GENERATED_MEDIA_KEY
+        ) || '[]'
+      );
+
+    if(!Array.isArray(media)){
+      return [];
+    }
+
+    const activeProjectId =
+      projectLibraryGetActiveId() ||
+      'local_active_project';
+
+    return media.filter(record =>
+      !record.projectId ||
+      record.projectId === activeProjectId
     );
 
   }catch(error){
@@ -2253,7 +2267,7 @@ function csGetGeneratedMedia(){
 
   }
 
-}
+    }
 
   /* =================================
    4L — ACTUAL GENERATED OUTPUT
