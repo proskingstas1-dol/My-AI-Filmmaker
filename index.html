@@ -2235,39 +2235,60 @@ later stage.`;
 const GENERATED_MEDIA_KEY =
   'my_ai_filmmaker_generated_media';
 
-function csGetGeneratedMedia(){
+function csSaveGeneratedMedia(media){
 
   try{
 
-    const media =
+    const existing =
       JSON.parse(
         localStorage.getItem(
           GENERATED_MEDIA_KEY
         ) || '[]'
       );
 
-    if(!Array.isArray(media)){
-      return [];
-    }
+    const existingList =
+      Array.isArray(existing)
+        ? existing
+        : [];
 
     const activeProjectId =
       projectLibraryGetActiveId() ||
       'local_active_project';
 
-    return media.filter(record =>
-      !record.projectId ||
-      record.projectId === activeProjectId
+    const incoming =
+      Array.isArray(media)
+        ? media
+        : [];
+
+    const otherProjectMedia =
+      existingList.filter(record => {
+
+        if(!record.projectId){
+          return true;
+        }
+
+        return record.projectId !== activeProjectId;
+
+      });
+
+    const merged =
+      [
+        ...otherProjectMedia,
+        ...incoming
+      ];
+
+    localStorage.setItem(
+      GENERATED_MEDIA_KEY,
+      JSON.stringify(merged)
     );
 
   }catch(error){
 
     console.error(error);
 
-    return [];
-
   }
 
-    }
+}
 
   /* =================================
    4L — ACTUAL GENERATED OUTPUT
