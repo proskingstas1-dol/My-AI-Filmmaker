@@ -2291,6 +2291,7 @@ function csUpdateGeneratedMediaRecord(id, data = {}){
 
   record.updatedAt =
     Date.now();
+  
 
   media[index] =
     record;
@@ -2318,7 +2319,13 @@ function csCreateGeneratedMediaRecord(data = {}){
   const now =
     Date.now();
 
+    const projectId =
+    projectLibraryGetActiveId() ||
+    'local_active_project';
+
   const record = {
+        projectId:
+      projectId,
 
     id:
       'generated_' +
