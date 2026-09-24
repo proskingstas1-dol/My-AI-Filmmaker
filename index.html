@@ -758,6 +758,56 @@ function projectLibraryRefresh(){
     `Project ${project.number} opened`
   );
 
+    function projectLibraryDelete(id){
+
+  const list =
+    projectLibraryGet();
+
+  const project =
+    list.find(item =>
+      item.id === id
+    );
+
+  if(!project){
+
+    toast('Project not found');
+
+    return;
+
+  }
+
+  const confirmed =
+    confirm(
+      `Delete Project ${project.number} — ${project.title || 'Untitled Project'}?`
+    );
+
+  if(!confirmed) return;
+
+  const nextList =
+    list.filter(item =>
+      item.id !== id
+    );
+
+  projectLibrarySet(
+    nextList
+  );
+
+  if(
+    projectLibraryGetActiveId() === id
+  ){
+
+    projectLibrarySetActiveId('');
+
+  }
+
+  projectLibraryRefresh();
+
+  toast(
+    `Project ${project.number} deleted`
+  );
+
+    }
+
 }
 
 function projectLibraryNew(){
