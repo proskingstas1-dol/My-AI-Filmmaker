@@ -677,13 +677,29 @@ function projectLibraryRefresh(){
           Last saved: ${esc(updated)}
         </div>
 
-        <div style="margin-top:12px">
+                <div
+          style="
+            margin-top:12px;
+            display:flex;
+            gap:8px;
+            flex-wrap:wrap;
+          "
+        >
+
           <button
             class="secondary"
             onclick="projectLibraryOpen('${project.id}')"
           >
             📂 Open Project
           </button>
+
+          <button
+            class="secondary"
+            onclick="projectLibraryDelete('${project.id}')"
+          >
+            🗑️ Delete
+          </button>
+
         </div>
 
 
