@@ -3075,6 +3075,174 @@ let csLongPressTimer = null;
 
 let csLongPressTriggered = false;
 
+/* =================================
+   CREATION MANAGER — STEP 3B
+   Manager page + library renderer
+================================= */
+
+function csOpenCreationManager(){
+
+  openTab('creationManager');
+
+  csCreationSelectionMode = false;
+
+  csSelectedGeneratedMediaIds.clear();
+
+  csRenderCreationManager();
+
+  csUpdateCreationSelectionUI();
+
+}
+
+
+function csRenderCreationManager(){
+
+  const library =
+    $('csCreationManagerLibrary');
+
+  if(!library){
+    return;
+  }
+
+  const media =
+    csGetGeneratedMedia();
+
+  if(!media.length){
+
+    library.innerHTML = `
+      <div class="empty">
+        No generated media records yet.
+      </div>
+    `;
+
+    csUpdateCreationSelectionUI();
+
+    return;
+  }
+
+  library.innerHTML = '';
+
+  [...media]
+    .reverse()
+    .forEach(record => {
+
+      const item =
+        document.createElement('div');
+
+      item.className =
+        'item cs-selectable' +
+        (
+          csCreationSelectionMode
+            ? ' selecting'
+            : ''
+        ) +
+        (
+          csSelectedGeneratedMediaIds.has(
+            record.id
+          )
+            ? ' selected'
+            : ''
+        );
+
+
+      const selectionCircle =
+        document.createElement('div');
+
+      selectionCircle.className =
+        'cs-select-circle';
+
+      selectionCircle.textContent =
+        csSelectedGeneratedMediaIds.has(
+          record.id
+        )
+          ? '✓'
+          : '';
+
+      item.appendChild(
+        selectionCircle
+      );
+
+
+      const scene =
+        Number.isInteger(record.sceneIndex)
+          ? p.scenes[record.sceneIndex]
+          : null;
+
+
+      const shot =
+        scene &&
+        Array.isArray(scene.shots) &&
+        Number.isInteger(record.shotIndex)
+          ? scene.shots[record.shotIndex]
+          : null;
+
+
+      const sceneName =
+        scene?.name ||
+        'Unassigned Scene';
+
+
+      const shotName =
+        shot
+          ? `${shot.type || 'Shot'} — ${shot.subject || 'Main subject'}`
+          : 'Unassigned Shot';
+
+
+      const created =
+        record.createdAt
+          ? new Date(
+              record.createdAt
+            ).toLocaleString()
+          : 'Unknown date';
+
+
+      item.innerHTML += `
+
+        <strong>
+          ${
+            record.type === 'video'
+              ? '🎥 Video'
+              : '🖼️ Image'
+          }
+        </strong>
+
+        <div class="small">
+          Scene: ${esc(sceneName)}
+        </div>
+
+        <div class="small">
+          Shot: ${esc(shotName)}
+        </div>
+
+        <div class="small">
+          Status:
+          ${esc(record.status || 'Unknown')}
+        </div>
+
+        <div class="small">
+          Created:
+          ${esc(created)}
+        </div>
+
+      `;
+
+
+      csBindGeneratedMediaLongPress(
+        item,
+        record.id
+      );
+
+
+      library.appendChild(
+        item
+      );
+
+    });
+
+
+  csUpdateCreationSelectionUI();
+
+  }
 
 function csEnterCreationSelectionMode(id){
 
