@@ -338,7 +338,101 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:30px 10px}
     </div>
 </div>
 </section>
- 
+
+  <!-- =================================
+     CREATION MANAGER — STEP 3A
+================================= -->
+
+<section id="creationManager" class="panel">
+
+  <div class="card">
+
+    <h2>🗂️ Manage Creations</h2>
+
+    <p class="small">
+      Press and hold a creation to select it.
+      You can then select multiple creations and manage them together.
+    </p>
+
+    <div class="notice">
+      💡 Long-press a creation for about half a second to enter selection mode.
+    </div>
+
+  </div>
+
+
+  <div class="card">
+
+    <h2>🎞️ Your Creations</h2>
+
+    <div id="csCreationManagerLibrary">
+
+      <div class="empty">
+        No generated media records yet.
+      </div>
+
+    </div>
+
+
+    <div
+      id="csManagerToolbar"
+      class="cs-manage-toolbar"
+    >
+
+      <div
+        id="csManagerSelectionCount"
+        class="cs-selection-count"
+      >
+        0 selected
+      </div>
+
+
+      <div class="row">
+
+        <button
+          class="secondary"
+          onclick="csSelectAllGeneratedMedia()"
+        >
+          ☑️ Select All
+        </button>
+
+
+        <button
+          class="secondary"
+          onclick="csCancelCreationSelection()"
+        >
+          Cancel
+        </button>
+
+
+        <button
+          class="primary"
+          id="csManagerDeleteButton"
+          onclick="csDeleteSelectedGeneratedMedia()"
+          disabled
+        >
+          🗑️ Delete
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div class="row">
+
+    <button
+      class="secondary"
+      onclick="openTab('creationStudio')"
+    >
+      ← Back to Creation Studio
+    </button>
+
+  </div>
+
+</section>
 <section id="assets" class="panel"><div class="card"><h2>📦 Assets</h2>
 <label>Asset name</label><input id="aname"><label>Type</label><select id="atype"><option>Image</option><option>Video</option><option>Audio</option><option>Other</option></select>
 <label>Notes / local file location</label><textarea id="anotes"></textarea><button class="primary" onclick="addAsset()">Add asset</button><div id="assetList"></div>
