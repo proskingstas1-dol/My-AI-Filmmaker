@@ -2507,14 +2507,37 @@ function csSelectGeneratedMediaRecord(id){
 
 async function csPrepareGenerationJob(){
 
-  const id =
+  let id =
     window.csSelectedGeneratedMediaId;
 
   if(!id){
-    toast('Select a creation first');
-    return null;
+
+    const availableMedia =
+      csGetGeneratedMedia();
+
+    const latestPrepared =
+      [...availableMedia]
+        .reverse()
+        .find(item =>
+          item.status === 'prepared'
+        );
+
+    if(latestPrepared){
+
+      id =
+        latestPrepared.id;
+
+      window.csSelectedGeneratedMediaId =
+        id;
+
+    }
+
   }
 
+  if(!id){
+    toast('Prepare a creation first');
+    return null;
+  }
   const media =
     csGetGeneratedMedia();
 
