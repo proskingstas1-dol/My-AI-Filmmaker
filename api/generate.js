@@ -167,18 +167,30 @@ export default async function handler(req, res) {
       DEFAULT_PROVIDER;
 
 
-    const provider =
+        const provider =
       getProvider(requestedProvider);
+
+    if (!provider) {
+
+      return res.status(400).json({
+        ok: false,
+        error: 'Unknown AI provider.',
+        provider: requestedProvider,
+        availableProviders:
+          getAvailableProviders()
+      });
+
+    }
 
     if (!provider.enabled) {
 
-  return res.status(400).json({
-    ok: false,
-    error: 'Requested AI provider is currently disabled.',
-    provider: provider.id,
-    availableProviders:
-      getAvailableProviders()
-  });
+      return res.status(400).json({
+        ok: false,
+        error: 'Requested AI provider is currently disabled.',
+        provider: provider.id,
+        availableProviders:
+          getAvailableProviders()
+      });
 
     }
 
