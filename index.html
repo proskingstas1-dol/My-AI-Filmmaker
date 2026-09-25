@@ -31,6 +31,75 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:30px 10px}
 .notice{font-size:12px;color:var(--muted);padding:10px;border-left:3px solid var(--accent);background:#111a31;border-radius:8px}
 .step{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #222d48}.step span{min-width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#243052;font-weight:700}
 .result h3{margin:0 0 6px}.bible{border:1px solid var(--line);border-radius:13px;padding:12px;margin:8px 0;background:#111a31}
+
+  /* =================================
+   CREATION MANAGER — STEP 2
+================================= */
+
+.cs-selectable{
+  position:relative;
+  user-select:none;
+  -webkit-user-select:none;
+  touch-action:pan-y;
+}
+
+.cs-selectable.selecting{
+  cursor:pointer;
+}
+
+.cs-select-circle{
+  position:absolute;
+  top:10px;
+  right:10px;
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  border:2px solid #aab3c7;
+  background:#0b1020;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  font-weight:800;
+  z-index:2;
+}
+
+.cs-selectable.selecting .cs-select-circle{
+  display:flex;
+}
+
+.cs-selectable.selected .cs-select-circle{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:white;
+}
+
+.cs-selectable.selected{
+  border-color:var(--accent);
+  box-shadow:0 0 0 2px #7c5cff44;
+}
+
+.cs-manage-toolbar{
+  display:none;
+  position:sticky;
+  bottom:10px;
+  z-index:6;
+  background:#111a31;
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:10px;
+  margin-top:12px;
+  box-shadow:0 10px 30px #0008;
+}
+
+.cs-manage-toolbar.active{
+  display:block;
+}
+
+.cs-selection-count{
+  font-weight:700;
+  margin-bottom:8px;
+}
 </style>
 </head>
 <body>
