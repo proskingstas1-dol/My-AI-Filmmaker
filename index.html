@@ -2852,12 +2852,32 @@ function csRenderGeneratedMediaLibrary(){
       const item =
         document.createElement('div');
 
-      item.className = 'item';
+      item.className =
+  'item cs-selectable' +
+  (csCreationSelectionMode
+    ? ' selecting'
+    : '') +
+  (csSelectedGeneratedMediaIds.has(record.id)
+    ? ' selected'
+    : '');
 
-      const scene =
-        Number.isInteger(record.sceneIndex)
-          ? p.scenes[record.sceneIndex]
-          : null;
+const selectionCircle =
+  document.createElement('div');
+
+selectionCircle.className =
+  'cs-select-circle';
+
+selectionCircle.textContent =
+  csSelectedGeneratedMediaIds.has(record.id)
+    ? '✓'
+    : '';
+
+item.appendChild(selectionCircle);
+
+const scene =
+  Number.isInteger(record.sceneIndex)
+    ? p.scenes[record.sceneIndex]
+    : null;
 
       const shot =
         scene &&
