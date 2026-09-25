@@ -2184,41 +2184,44 @@ later stage.`;
      4K — CREATE GENERATED MEDIA RECORD
   ================================= */
 
-  csCreateGeneratedMediaRecord({
+    const createdRecord =
+    csCreateGeneratedMediaRecord({
 
-    type: outputType,
+      type: outputType,
 
-    status: 'prepared',
+      status: 'prepared',
 
-    sceneIndex:
-      sceneSelect && sceneSelect.value !== ''
-        ? Number(sceneSelect.value)
-        : null,
+      sceneIndex:
+        sceneSelect && sceneSelect.value !== ''
+          ? Number(sceneSelect.value)
+          : null,
 
-    shotIndex:
-      shotSelect && shotSelect.value !== ''
-        ? Number(shotSelect.value)
-        : null,
+      shotIndex:
+        shotSelect && shotSelect.value !== ''
+          ? Number(shotSelect.value)
+          : null,
 
-    prompt: prompt,
+      prompt: prompt,
 
-    instructions: instructions,
+      instructions: instructions,
 
-    style: style,
+      style: style,
 
-    aspect: aspect,
+      aspect: aspect,
 
-    duration:
-      outputType === 'video'
-        ? duration
-        : '',
+      duration:
+        outputType === 'video'
+          ? duration
+          : '',
 
-    resultUrl: '',
+      resultUrl: '',
 
-    resultName: ''
+      resultName: ''
 
-  });
+    });
 
+  window.csSelectedGeneratedMediaId =
+    createdRecord?.id || '';
   csClearOutput();
 
   csSetOutputPending();
