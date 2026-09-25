@@ -1,4 +1,4 @@
-<!doctype html>
+a<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -2238,6 +2238,40 @@ later stage.`;
 const GENERATED_MEDIA_KEY =
   'my_ai_filmmaker_generated_media';
 
+function csGetGeneratedMedia(){
+
+  try{
+
+    const media =
+      JSON.parse(
+        localStorage.getItem(
+          GENERATED_MEDIA_KEY
+        ) || '[]'
+      );
+
+    if(!Array.isArray(media)){
+      return [];
+    }
+
+    const activeProjectId =
+      projectLibraryGetActiveId() ||
+      'local_active_project';
+
+    return media.filter(record =>
+      !record.projectId ||
+      record.projectId === activeProjectId
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+    return [];
+
+  }
+
+}
+
 function csSaveGeneratedMedia(media){
 
   try{
@@ -2291,8 +2325,7 @@ function csSaveGeneratedMedia(media){
 
   }
 
-}
-
+  }
   /* =================================
    4L — ACTUAL GENERATED OUTPUT
    Update a generated media record
