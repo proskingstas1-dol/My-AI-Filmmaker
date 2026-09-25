@@ -2955,14 +2955,18 @@ ${
     `
   }
 
-      `;
+       `;
+
+      csBindGeneratedMediaLongPress(
+        item,
+        record.id
+      );
 
       library.appendChild(item);
 
     });
 
-}
-
+  }
 /* =================================
    CREATION MANAGER — STEP 2
    Long-press selection mode
