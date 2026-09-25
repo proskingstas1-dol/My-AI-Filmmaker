@@ -2504,7 +2504,6 @@ function csSelectGeneratedMediaRecord(id){
   /* =================================
    4L-5 — ACTIVE GENERATION JOB
 ================================= */
-
 async function csPrepareGenerationJob(){
 
   let id =
@@ -2538,6 +2537,7 @@ async function csPrepareGenerationJob(){
     toast('Prepare a creation first');
     return null;
   }
+
   const media =
     csGetGeneratedMedia();
 
@@ -2570,18 +2570,20 @@ async function csPrepareGenerationJob(){
     const response =
       await fetch('/api/generate',{
         method:'POST',
+
         headers:{
           'Content-Type':'application/json'
         },
+
         body:JSON.stringify({
-  id:record.id,
-  type:record.type,
-  provider:$('csProvider')?.value || 'test',
-  prompt:record.prompt,
-  instructions:record.instructions,
-  style:record.style,
-  aspect:record.aspect,
-    duration:record.duration
+          id:record.id,
+          type:record.type,
+          provider:$('csProvider')?.value || 'test',
+          prompt:record.prompt,
+          instructions:record.instructions,
+          style:record.style,
+          aspect:record.aspect,
+          duration:record.duration
         })
       });
 
@@ -2589,14 +2591,73 @@ async function csPrepareGenerationJob(){
       await response.json();
 
     if(!response.ok){
+
       throw new Error(
         data.error ||
         'Generation backend request failed.'
       );
+
     }
 
+    /* =================================
+       4L — CONNECT GENERATED RESULT
+    ================================= */
+
+    const generatedResult =
+      data?.result || null;
+
+    const resultUrl =
+      generatedResult?.resultUrl || '';
+
+    const resultName =
+      generatedResult?.resultName || '';
+
+    if(resultUrl){
+
+      csUpdateGeneratedMediaRecord(
+        record.id,
+        {
+          status:'completed',
+          resultUrl:resultUrl,
+          resultName:resultName
+        }
+      );
+
+      csShowOutputMedia(
+        resultUrl,
+        record.type
+      );
+
+      csRenderGeneratedMediaLibrary();
+
+      csSetOutputStatus(
+        '✅ Generation completed. Your media is ready.'
+      );
+
+      toast(
+        data.message ||
+        'AI generation completed'
+      );
+
+      return data;
+
+    }
+
+    /* =================================
+       GATEWAY CONNECTED — NO MEDIA YET
+    ================================= */
+
+    csUpdateGeneratedMediaRecord(
+      record.id,
+      {
+        status:'gateway_connected'
+      }
+    );
+
+    csRenderGeneratedMediaLibrary();
+
     csSetOutputStatus(
-      '✅ Generation backend connected.'
+      '✅ AI Provider Gateway connected. No generated media was returned yet.'
     );
 
     toast(
@@ -2610,17 +2671,30 @@ async function csPrepareGenerationJob(){
 
     console.error(error);
 
+    csUpdateGeneratedMediaRecord(
+      record.id,
+      {
+        status:'generation_failed'
+      }
+    );
+
+    csRenderGeneratedMediaLibrary();
+
     csSetOutputStatus(
-      '❌ Could not connect to generation backend.'
+      '❌ Generation failed: ' +
+      (error?.message ||
+       'Unknown generation error.')
     );
 
     toast(
-      'Backend connection failed'
+      'Generation failed'
     );
 
     return null;
+
   }
-  }
+
+}
 
 
   /* ================================
