@@ -3394,7 +3394,138 @@ function csUpdateCreationSelectionUI(){
 
 }
 
+/* =================================
+   CREATION MANAGER — STEP 3C
+   Delete selected creations
+================================= */
 
+function csDeleteSelectedGeneratedMedia(){
+
+  const selectedIds =
+    Array.from(
+      csSelectedGeneratedMediaIds
+    );
+
+  if(!selectedIds.length){
+
+    toast('Select at least one creation');
+
+    return;
+  }
+
+
+  const confirmed =
+    confirm(
+      selectedIds.length === 1
+        ? 'Delete this creation? This cannot be undone.'
+        : `Delete ${selectedIds.length} selected creations? This cannot be undone.`
+    );
+
+  if(!confirmed){
+
+    return;
+  }
+
+
+  const activeProjectId =
+    projectLibraryGetActiveId() ||
+    'local_active_project';
+
+
+  try{
+
+    const allMedia =
+      JSON.parse(
+        localStorage.getItem(
+          GENERATED_MEDIA_KEY
+        ) || '[]'
+      );
+
+
+    const mediaList =
+      Array.isArray(allMedia)
+        ? allMedia
+        : [];
+
+
+    const remainingMedia =
+      mediaList.filter(record => {
+
+        if(!record.projectId){
+
+          return !selectedIds.includes(
+            record.id
+          );
+
+        }
+
+
+        if(
+          record.projectId ===
+          activeProjectId
+        ){
+
+          return !selectedIds.includes(
+            record.id
+          );
+
+        }
+
+
+        return true;
+
+      });
+
+
+    localStorage.setItem(
+      GENERATED_MEDIA_KEY,
+      JSON.stringify(
+        remainingMedia
+      )
+    );
+
+
+    csCreationSelectionMode = false;
+
+    csSelectedGeneratedMediaIds.clear();
+
+
+    if(csLongPressTimer){
+
+      clearTimeout(
+        csLongPressTimer
+      );
+
+      csLongPressTimer = null;
+
+    }
+
+
+    csRenderGeneratedMediaLibrary();
+
+    csRenderCreationManager();
+
+    csUpdateCreationSelectionUI();
+
+
+    toast(
+      selectedIds.length === 1
+        ? 'Creation deleted'
+        : `${selectedIds.length} creations deleted`
+    );
+
+
+  }catch(error){
+
+    console.error(error);
+
+    toast(
+      'Could not delete the selected creations'
+    );
+
+  }
+
+  }
 function csBindGeneratedMediaLongPress(
   item,
   id
