@@ -2943,6 +2943,340 @@ ${
 
 }
 
+/* =================================
+   CREATION MANAGER — STEP 2
+   Long-press selection mode
+================================= */
+
+let csCreationSelectionMode = false;
+
+let csSelectedGeneratedMediaIds =
+  new Set();
+
+let csLongPressTimer = null;
+
+let csLongPressTriggered = false;
+
+
+function csEnterCreationSelectionMode(id){
+
+  csCreationSelectionMode = true;
+
+  csSelectedGeneratedMediaIds.clear();
+
+  if(id){
+    csSelectedGeneratedMediaIds.add(id);
+  }
+
+  csRenderGeneratedMediaLibrary();
+
+  csRenderCreationManager();
+
+}
+
+
+function csToggleGeneratedMediaSelection(id){
+
+  if(!csCreationSelectionMode){
+    return;
+  }
+
+  if(
+    csSelectedGeneratedMediaIds.has(id)
+  ){
+
+    csSelectedGeneratedMediaIds.delete(id);
+
+  }else{
+
+    csSelectedGeneratedMediaIds.add(id);
+
+  }
+
+  csRenderGeneratedMediaLibrary();
+
+  csRenderCreationManager();
+
+}
+
+
+function csCancelCreationSelection(){
+
+  csCreationSelectionMode = false;
+
+  csSelectedGeneratedMediaIds.clear();
+
+  if(csLongPressTimer){
+
+    clearTimeout(csLongPressTimer);
+
+    csLongPressTimer = null;
+
+  }
+
+  csRenderGeneratedMediaLibrary();
+
+  csRenderCreationManager();
+
+}
+
+
+function csSelectAllGeneratedMedia(){
+
+  const media =
+    csGetGeneratedMedia();
+
+  csCreationSelectionMode = true;
+
+  csSelectedGeneratedMediaIds =
+    new Set(
+      media.map(record => record.id)
+    );
+
+  csRenderGeneratedMediaLibrary();
+
+  csRenderCreationManager();
+
+}
+
+
+function csUpdateCreationSelectionUI(){
+
+  const count =
+    csSelectedGeneratedMediaIds.size;
+
+  const countLabels = [
+
+    $('csSelectionCount'),
+
+    $('csManagerSelectionCount')
+
+  ];
+
+  countLabels.forEach(el => {
+
+    if(el){
+
+      el.textContent =
+        count + ' selected';
+
+    }
+
+  });
+
+
+  const deleteButtons = [
+
+    $('csDeleteSelectedButton'),
+
+    $('csManagerDeleteButton')
+
+  ];
+
+  deleteButtons.forEach(btn => {
+
+    if(btn){
+
+      btn.disabled =
+        count === 0;
+
+    }
+
+  });
+
+
+  const toolbars = [
+
+    $('csManageToolbar'),
+
+    $('csManagerToolbar')
+
+  ];
+
+  toolbars.forEach(toolbar => {
+
+    if(toolbar){
+
+      toolbar.classList.toggle(
+        'active',
+        csCreationSelectionMode
+      );
+
+    }
+
+  });
+
+}
+
+
+function csBindGeneratedMediaLongPress(
+  item,
+  id
+){
+
+  let startX = 0;
+
+  let startY = 0;
+
+
+  const start = event => {
+
+    csLongPressTriggered = false;
+
+    startX =
+      event.touches?.[0]?.clientX ??
+      event.clientX ??
+      0;
+
+    startY =
+      event.touches?.[0]?.clientY ??
+      event.clientY ??
+      0;
+
+
+    if(csLongPressTimer){
+
+      clearTimeout(
+        csLongPressTimer
+      );
+
+    }
+
+
+    csLongPressTimer =
+      setTimeout(() => {
+
+        csLongPressTriggered = true;
+
+        csEnterCreationSelectionMode(id);
+
+      },550);
+
+  };
+
+
+  const move = event => {
+
+    const x =
+      event.touches?.[0]?.clientX ??
+      event.clientX ??
+      0;
+
+    const y =
+      event.touches?.[0]?.clientY ??
+      event.clientY ??
+      0;
+
+
+    if(
+      Math.abs(x - startX) > 12 ||
+      Math.abs(y - startY) > 12
+    ){
+
+      if(csLongPressTimer){
+
+        clearTimeout(
+          csLongPressTimer
+        );
+
+        csLongPressTimer = null;
+
+      }
+
+    }
+
+  };
+
+
+  const cancel = () => {
+
+    if(csLongPressTimer){
+
+      clearTimeout(
+        csLongPressTimer
+      );
+
+      csLongPressTimer = null;
+
+    }
+
+  };
+
+
+  item.addEventListener(
+    'touchstart',
+    start,
+    {passive:true}
+  );
+
+  item.addEventListener(
+    'touchmove',
+    move,
+    {passive:true}
+  );
+
+  item.addEventListener(
+    'touchend',
+    cancel
+  );
+
+  item.addEventListener(
+    'touchcancel',
+    cancel
+  );
+
+  item.addEventListener(
+    'mousedown',
+    start
+  );
+
+  item.addEventListener(
+    'mousemove',
+    move
+  );
+
+  item.addEventListener(
+    'mouseup',
+    cancel
+  );
+
+  item.addEventListener(
+    'mouseleave',
+    cancel
+  );
+
+
+  item.addEventListener(
+    'click',
+    event => {
+
+      if(csLongPressTriggered){
+
+        event.preventDefault();
+
+        event.stopPropagation();
+
+        csLongPressTriggered = false;
+
+        return;
+
+      }
+
+
+      if(csCreationSelectionMode){
+
+        event.preventDefault();
+
+        event.stopPropagation();
+
+        csToggleGeneratedMediaSelection(id);
+
+      }
+
+    }
+  );
+
+}
 function csClearOutput(){
 
   const preview = $('csOutputPreview');
