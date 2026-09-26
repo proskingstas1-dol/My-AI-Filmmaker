@@ -58,18 +58,21 @@ async function generateWithGemini(body) {
 
   }
 
+    const aspect =
+    String(body.aspect || '1:1')
+      .split(' ')[0]
+      .trim();
+
   const prompt = [
     body.prompt || '',
     body.instructions || '',
     body.style
       ? `Visual style: ${body.style}`
       : '',
-    body.aspect
-      ? `Aspect ratio: ${body.aspect}`
+    aspect
+      ? `Aspect ratio: ${aspect}`
       : ''
   ]
-    .filter(Boolean)
-    .join('\n\n');
 
   const response =
     await fetch(
