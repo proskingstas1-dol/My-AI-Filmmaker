@@ -90,11 +90,12 @@ async function generateWithGemini(body) {
 
           input: prompt,
 
-          response_format: {
+             response_format: {
             type: 'image',
             mime_type: 'image/png',
-            aspect_ratio:
-              body.aspect || '1:1'
+            aspect_ratio: aspect,
+            image_size: '1K'
+                              
           }
         })
       }
