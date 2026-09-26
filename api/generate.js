@@ -94,7 +94,7 @@ async function generateWithGemini(body) {
 
              response_format: {
             type: 'image',
-            mime_type: 'image/png',
+            mime_type: 'image/jpeg',
             aspect_ratio: aspect,
             image_size: '1K'
                               
