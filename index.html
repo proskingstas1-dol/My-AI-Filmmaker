@@ -543,8 +543,7 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:30px 10px}
 <label>Story tone</label><select id="directorTone"><option>Hopeful</option><option>Emotional</option><option>Suspenseful</option><option>Funny</option><option>Serious</option><option>Inspirational</option><option>Dark</option><option>Epic</option></select>
 <label>Main character</label><input id="directorCharacter" placeholder="e.g. Kofi, a determined student">
 <div class="row" style="margin-top:12px"><button class="primary" onclick="runDirector()">🎬 BUILD WITH AI DIRECTOR</button><button class="secondary" onclick="useProjectIdea()">Use project idea</button></div>
-<div class="notice" style="margin-top:12px">V3 automatically uses your saved Character Bible in the Director's continuity prompt. This Director is still a local planning engine; it does not send your idea to an online AI service.</div>
-</div>
+<div class="notice" style="margin-top:12px">V3 uses your Character Bible for continuity. The AI Director can now send your film brief to the connected Gemini AI Director through your Vercel gateway.</div>
 
 <div id="directorOutput" class="card" style="display:none">
 <h2>🎥 Director's production plan</h2><div id="directorSummary"></div>
