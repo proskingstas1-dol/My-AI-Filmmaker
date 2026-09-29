@@ -1383,7 +1383,7 @@ function makeScene(i,total,char,tone,style,idea){
  };
 }
 
-function runDirector(){
+async function runDirector(){
  const idea=$('directorIdea').value.trim();
  if(!idea){toast('Enter a film idea first');return}
 
