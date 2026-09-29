@@ -7,11 +7,19 @@ const AI_PROVIDERS = {
   },
 
   gemini: {
-    id: 'gemini',
-    name: 'Google Gemini',
-    type: 'image',
-    enabled: true
-  },
+  id: 'gemini',
+  name: 'Google Gemini',
+  type: 'image',
+  enabled: true
+},
+
+geminiDirector: {
+  id: 'geminiDirector',
+  name: 'Google Gemini AI Director',
+  type: 'text',
+  enabled: true
+},
+
 
   openai: {
     id: 'openai',
