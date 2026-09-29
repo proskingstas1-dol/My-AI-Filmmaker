@@ -54,6 +54,83 @@ function getProvider(providerId) {
 
 
 async function generateWithGemini(body) {
+  async function generateWithGeminiDirector(body) {
+
+  const apiKey =
+    process.env.GEMINI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error(
+      'GEMINI_API_KEY is not configured.'
+    );
+  }
+
+  const prompt = [
+    'You are the AI Director for My AI Filmmaker.',
+    '',
+    'Your job is to help develop a movie or short film from the user idea.',
+    'Think like a professional film director, screenwriter and production planner.',
+    '',
+    'User request:',
+    body.prompt || '',
+    '',
+    body.instructions || ''
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  const response =
+    await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent',
+      {
+        method: 'POST',
+
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey
+        },
+
+        body: JSON.stringify({
+          contents: [
+            {
+              role: 'user',
+              parts: [
+                {
+                  text: prompt
+                }
+              ]
+            }
+          ]
+        })
+      }
+    );
+
+  const data =
+    await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data?.error?.message ||
+      'Gemini AI Director generation failed.'
+    );
+  }
+
+  const text =
+    data?.candidates?.[0]?.content?.parts
+      ?.map(part => part.text || '')
+      .join('')
+      .trim();
+
+  if (!text) {
+    throw new Error(
+      'Gemini AI Director returned no text.'
+    );
+  }
+
+  return {
+    text: text
+  };
+    }
 
   const apiKey =
     process.env.GEMINI_API_KEY;
