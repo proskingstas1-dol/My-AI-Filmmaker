@@ -329,6 +329,43 @@ export default async function handler(req, res) {
 
   }
 
+if (provider.id === 'geminiDirector') {
+
+  const result =
+    await generateWithGeminiDirector(body);
+
+  return res.status(200).json({
+
+    ok: true,
+
+    gateway: {
+      connected: true,
+      provider: provider.id,
+      providerName: provider.name,
+      providerType: provider.type
+    },
+
+    request: {
+      id: body.id || null,
+      type: body.type || 'director',
+      prompt: body.prompt || '',
+      instructions: body.instructions || ''
+    },
+
+    result: {
+      text:
+        result.text
+    },
+
+    message:
+      'Gemini AI Director response completed.',
+
+    availableProviders:
+      getAvailableProviders()
+
+  });
+
+}
     
 
 
