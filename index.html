@@ -1471,8 +1471,126 @@ The film must feel like one continuous production. Character identity and visual
  renderDirectorBible();
  $('directorSteps').innerHTML=scenes.map((s,i)=>`<div class="step"><span>${i+1}</span><div><strong>${esc(s.name)}</strong><div class="small">${esc(s.action)}</div></div></div>`).join('');
  $('masterPrompt').value=master;
- toast('V3 film plan created')
-}
+
+ const aiStatus=$('geminiDirectorStatus');
+ const aiOutput=$('geminiDirectorOutput');
+
+ if(aiStatus){
+   aiStatus.textContent='⏳ AI Director is thinking… Sending your film brief to Gemini.';
+ }
+
+ if(aiOutput){
+   aiOutput.style.display='block';
+   aiOutput.textContent='Waiting for Gemini AI Director…';
+ }
+
+ try{
+   const aiResponse=await fetch('/api/generate',{
+     method:'POST',
+     headers:{
+       'Content-Type':'application/json'
+     },
+     body:JSON.stringify({
+       provider:'geminiDirector',
+       type:'director',
+       id:'director-'+Date.now(),
+
+       prompt:[
+         'Develop this film as the AI Director for My AI Filmmaker.',
+         '',
+         'FILM IDEA:',
+         idea,
+         '',
+         'GENRE:',
+         genre,
+         '',
+         'TONE:',
+         tone,
+         '',
+         'VISUAL STYLE:',
+         style,
+         '',
+         'FILM LENGTH:',
+         length,
+         '',
+         'NUMBER OF SCENES:',
+         total,
+         '',
+         'MAIN CHARACTER:',
+         char,
+         '',
+         'CHARACTER BIBLE:',
+         bible
+       ].join('\n'),
+
+       instructions:[
+         'Return a practical director-style production response.',
+         'Include: refined story concept, main character direction, setting/world, central conflict, visual direction, scene progression, and continuity notes.',
+         'Keep the response useful for turning the plan into scenes and cinematic shots.',
+         'Do not claim to have generated images or video.'
+       ].join('\n')
+     })
+   });
+
+   const raw=await aiResponse.text();
+
+   let data;
+
+   try{
+     data=raw ? JSON.parse(raw) : null;
+   }catch(error){
+     throw new Error(
+       raw && raw.trim().startsWith('<')
+         ? 'The AI Director endpoint returned a web page. Open the Vercel app, not GitHub Pages.'
+         : 'The AI Director returned an invalid response.'
+     );
+   }
+
+   if(!aiResponse.ok){
+     throw new Error(
+       data?.error ||
+       'AI Director request failed.'
+     );
+   }
+
+   const aiText=
+     data?.result?.text || '';
+
+   if(!aiText){
+     throw new Error(
+       'Gemini AI Director returned no text.'
+     );
+   }
+
+   if(aiOutput){
+     aiOutput.textContent=aiText;
+   }
+
+   if(aiStatus){
+     aiStatus.textContent=
+       '✅ Gemini AI Director response received.';
+   }
+
+   toast('AI Director response ready');
+
+ }catch(error){
+
+   console.error(error);
+
+   if(aiOutput){
+     aiOutput.textContent=
+       'AI Director could not complete the online request.\n\n' +
+       (error?.message ||
+       'Unknown AI Director error.');
+   }
+
+   if(aiStatus){
+     aiStatus.textContent=
+       '⚠️ AI Director request failed. Your local production plan is still available above.';
+   }
+
+   toast('AI Director request failed');
+ }
 
 function sendDirectorToV1(){
  if(!p.idea){toast('Build a film first');return}
