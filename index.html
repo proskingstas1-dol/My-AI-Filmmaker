@@ -550,6 +550,13 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:30px 10px}
 <h3>Character Bible used</h3><div id="directorBible"></div>
 <h3>Director workflow</h3><div id="directorSteps"></div>
 <h3>Master generation prompt</h3><textarea id="masterPrompt" style="min-height:300px"></textarea>
+
+<div id="geminiDirectorStatus" class="notice" style="margin-top:12px">
+🤖 AI Director is ready. Build your film to request a Gemini production response.
+</div>
+
+<div id="geminiDirectorOutput" class="result" style="display:none;white-space:pre-wrap;margin-top:12px"></div>
+
 <div class="row"><button class="primary" onclick="sendDirectorToV1()">↪️ Send to workspace</button><button class="secondary" onclick="copyText('masterPrompt')">Copy master prompt</button></div>
 <div class="row" style="margin-top:8px"><button class="secondary" onclick="openTab('story')">Open Story</button><button class="secondary" onclick="openTab('characters')">Open Characters</button><button class="secondary" onclick="openTab('scenes')">Open Scenes</button><button class="secondary" onclick="openTab('prompts')">Open Prompts</button></div>
 </div>
