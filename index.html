@@ -1589,9 +1589,10 @@ The film must feel like one continuous production. Character identity and visual
        '⚠️ AI Director request failed. Your local production plan is still available above.';
    }
 
-   toast('AI Director request failed');
+      toast('AI Director request failed');
  }
 
+}
 function sendDirectorToV1(){
  if(!p.idea){toast('Build a film first');return}
  save();toast('Film sent to your filmmaking workspace');setTimeout(()=>openTab('story'),500)
