@@ -52,9 +52,7 @@ function getProvider(providerId) {
   return provider;
 }
 
-
-async function generateWithGemini(body) {
-  async function generateWithGeminiDirector(body) {
+async function generateWithGeminiDirector(body) {
 
   const apiKey =
     process.env.GEMINI_API_KEY;
@@ -130,7 +128,8 @@ async function generateWithGemini(body) {
   return {
     text: text
   };
-    }
+}
+async function generateWithGemini(body) {
 
   const apiKey =
     process.env.GEMINI_API_KEY;
