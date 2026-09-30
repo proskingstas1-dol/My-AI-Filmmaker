@@ -40,6 +40,99 @@ geminiDirector: {
 const DEFAULT_PROVIDER = 'test';
 
 
+/* =================================
+   AI GATEWAY FOUNDATION
+   Provider → Model → Capability
+================================= */
+
+const AI_CAPABILITIES = {
+  TEXT: 'text',
+  IMAGE: 'image',
+  VIDEO: 'video',
+  AUDIO: 'audio'
+};
+
+
+const AI_MODELS = {
+
+  test: {
+    id: 'test-model',
+    providerId: 'test',
+    name: 'Test Model',
+
+    capabilities: [
+      AI_CAPABILITIES.TEXT,
+      AI_CAPABILITIES.IMAGE,
+      AI_CAPABILITIES.VIDEO,
+      AI_CAPABILITIES.AUDIO
+    ],
+
+    access: 'free',
+    enabled: true
+  },
+
+
+  geminiDirector: {
+    id: 'gemini-2.5-flash-lite',
+    providerId: 'geminiDirector',
+    name: 'Gemini Director Model',
+
+    capabilities: [
+      AI_CAPABILITIES.TEXT
+    ],
+
+    access: 'free',
+    enabled: true
+  },
+
+
+  gemini: {
+    id: 'gemini-3.1-flash-image',
+    providerId: 'gemini',
+    name: 'Gemini Image Model',
+
+    capabilities: [
+      AI_CAPABILITIES.IMAGE
+    ],
+
+    access: 'free',
+    enabled: true
+  },
+
+
+  openai: {
+    id: 'openai-default',
+    providerId: 'openai',
+    name: 'OpenAI Model',
+
+    capabilities: [
+      AI_CAPABILITIES.TEXT,
+      AI_CAPABILITIES.IMAGE,
+      AI_CAPABILITIES.VIDEO,
+      AI_CAPABILITIES.AUDIO
+    ],
+
+    access: 'paid',
+    enabled: false
+  },
+
+
+  flux: {
+    id: 'flux-default',
+    providerId: 'flux',
+    name: 'FLUX Model',
+
+    capabilities: [
+      AI_CAPABILITIES.IMAGE
+    ],
+
+    access: 'paid',
+    enabled: false
+  }
+
+};
+
+
 function getProvider(providerId) {
 
   const provider =
@@ -51,6 +144,49 @@ function getProvider(providerId) {
 
   return provider;
 }
+
+
+function getModelsForProvider(providerId) {
+
+  return Object.values(AI_MODELS)
+    .filter(model =>
+      model.providerId === providerId
+    );
+
+}
+
+
+function getModelsForCapability(capability) {
+
+  return Object.values(AI_MODELS)
+    .filter(model =>
+      model.enabled &&
+      model.capabilities.includes(capability)
+    );
+
+}
+
+
+function getModel(modelId) {
+
+  return (
+    Object.values(AI_MODELS)
+      .find(model =>
+        model.id === modelId
+      ) || null
+  );
+
+}
+
+
+function getAvailableGatewayModels() {
+
+  return Object.values(AI_MODELS)
+    .filter(model =>
+      model.enabled
+    );
+
+      }
 
 async function generateWithGeminiDirector(body) {
 
