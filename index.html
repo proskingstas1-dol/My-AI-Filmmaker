@@ -106,7 +106,7 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:30px 10px}
   <!-- TEMPORARY MODEL SWITCH TEST -->
 <button
   type="button"
-  id="testAIModelSwitchButton"
+  onclick="window.testAIModelSwitchPopup()"
   style="
     position:fixed;
     bottom:18px;
@@ -4574,6 +4574,20 @@ document.addEventListener(
 
 window.testAIModelSwitchPopup =
   function(){
+
+    const overlay =
+      document.getElementById(
+        'aiModelSwitchOverlay'
+      );
+
+    if(!overlay){
+      alert('Model Switch popup element not found.');
+      return;
+    }
+
+    overlay.hidden = false;
+
+  };
 
     return openAIModelSwitchPopup({
 
