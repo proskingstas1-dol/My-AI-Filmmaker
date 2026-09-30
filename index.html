@@ -4368,7 +4368,213 @@ ${result}`
 
 </style>
 
+/* =================================
+   STEP 7B — AI MODEL SWITCH CONTROLLER
+================================= */
 
+let aiModelSwitchResolver = null;
+
+function openAIModelSwitchPopup(options = {}){
+
+  const overlay =
+    document.getElementById('aiModelSwitchOverlay');
+
+  if(!overlay){
+    console.error('AI Model Switch popup not found.');
+    return Promise.resolve(false);
+  }
+
+  const current =
+    options.currentModel ||
+    'Current model';
+
+  const next =
+    options.nextModel ||
+    'Alternative model';
+
+  const reason =
+    options.reason ||
+    'The current model is unavailable.';
+
+  const access =
+    options.access ||
+    'Availability unknown';
+
+  const capability =
+    options.capability ||
+    '';
+
+  document.getElementById(
+    'aiModelSwitchCurrent'
+  ).textContent = current;
+
+  document.getElementById(
+    'aiModelSwitchNext'
+  ).textContent = next;
+
+  document.getElementById(
+    'aiModelSwitchReason'
+  ).textContent =
+    capability
+      ? `${reason} Capability: ${capability}.`
+      : reason;
+
+  document.getElementById(
+    'aiModelSwitchAccess'
+  ).textContent = access;
+
+  overlay.hidden = false;
+
+  return new Promise(resolve => {
+
+    aiModelSwitchResolver = resolve;
+
+  });
+}
+
+
+function closeAIModelSwitchPopup(result){
+
+  const overlay =
+    document.getElementById('aiModelSwitchOverlay');
+
+  if(overlay){
+    overlay.hidden = true;
+  }
+
+  if(aiModelSwitchResolver){
+
+    const resolve =
+      aiModelSwitchResolver;
+
+    aiModelSwitchResolver = null;
+
+    resolve(result);
+
+  }
+
+}
+
+
+/* CANCEL */
+
+document
+  .getElementById('aiModelSwitchCancel')
+  ?.addEventListener(
+    'click',
+    () => {
+
+      closeAIModelSwitchPopup({
+        approved: false,
+        action: 'cancel'
+      });
+
+    }
+  );
+
+
+/* CONTINUE */
+
+document
+  .getElementById('aiModelSwitchContinue')
+  ?.addEventListener(
+    'click',
+    () => {
+
+      closeAIModelSwitchPopup({
+        approved: true,
+        action: 'continue'
+      });
+
+    }
+  );
+
+
+/* BACKDROP CLICK = CANCEL */
+
+document
+  .getElementById('aiModelSwitchOverlay')
+  ?.addEventListener(
+    'click',
+    event => {
+
+      if(
+        event.target.id ===
+        'aiModelSwitchOverlay'
+      ){
+
+        closeAIModelSwitchPopup({
+          approved: false,
+          action: 'cancel'
+        });
+
+      }
+
+    }
+  );
+
+
+/* ESCAPE KEY = CANCEL */
+
+document.addEventListener(
+  'keydown',
+  event => {
+
+    if(
+      event.key === 'Escape'
+    ){
+
+      const overlay =
+        document.getElementById(
+          'aiModelSwitchOverlay'
+        );
+
+      if(
+        overlay &&
+        !overlay.hidden
+      ){
+
+        closeAIModelSwitchPopup({
+          approved: false,
+          action: 'cancel'
+        });
+
+      }
+
+    }
+
+  }
+);
+
+
+/* TEST HELPER
+   This only opens the popup.
+   It does NOT perform a model switch.
+*/
+
+window.testAIModelSwitchPopup =
+  function(){
+
+    return openAIModelSwitchPopup({
+
+      currentModel:
+        'Google Gemini — Current Model',
+
+      nextModel:
+        'Google Gemini — Alternative Model',
+
+      reason:
+        'The current model is temporarily unavailable.',
+
+      access:
+        '🟢 Free',
+
+      capability:
+        'TEXT'
+
+    });
+
+  };
 </script>
 </body>
 </html>
