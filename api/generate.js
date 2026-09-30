@@ -427,7 +427,115 @@ function getAvailableGatewayModels() {
 
     }
     
- 
+ /* =================================
+   AI MODEL SWITCH APPROVAL
+================================= */
+
+function createModelSwitchRequest(
+  currentModel,
+  nextModel,
+  reason
+) {
+
+  if (!nextModel) {
+
+    return {
+      approved: false,
+      requiresApproval: false,
+      available: false,
+      reason:
+        'No compatible model is available.'
+    };
+
+  }
+
+  return {
+    approved: false,
+
+    requiresApproval: true,
+
+    available: true,
+
+    currentModel:
+      currentModel || null,
+
+    nextModel,
+
+    capability:
+      nextModel.capabilities?.[0] ||
+      null,
+
+    access:
+      nextModel.access ||
+      'unknown',
+
+    reason:
+      reason ||
+      'A model switch is required.',
+
+    createdAt:
+      new Date().toISOString()
+  };
+
+}
+
+
+function approveModelSwitch(
+  switchRequest
+) {
+
+  if (
+    !switchRequest ||
+    !switchRequest.nextModel
+  ) {
+
+    return {
+      approved: false,
+      model: null,
+      reason:
+        'Invalid model switch request.'
+    };
+
+  }
+
+  return {
+    approved: true,
+
+    model:
+      switchRequest.nextModel,
+
+    capability:
+      switchRequest.capability,
+
+    access:
+      switchRequest.nextModel.access,
+
+    approvedAt:
+      new Date().toISOString()
+  };
+
+}
+
+
+function cancelModelSwitch(
+  switchRequest
+) {
+
+  return {
+    approved: false,
+
+    cancelled: true,
+
+    model: null,
+
+    reason:
+      'Model switch cancelled by user.',
+
+    originalRequest:
+      switchRequest || null
+  };
+
+}
 
 /* =================================
    AI MODEL DISCOVERY
