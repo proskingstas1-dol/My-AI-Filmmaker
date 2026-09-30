@@ -154,7 +154,80 @@ function getModelsForProvider(providerId) {
     );
 
 }
+/* =================================
+   AI CAPABILITY VERIFICATION
+================================= */
 
+function modelSupportsCapability(
+  model,
+  capability
+) {
+
+  if (!model) {
+    return false;
+  }
+
+  if (!Array.isArray(model.capabilities)) {
+    return false;
+  }
+
+  return model.capabilities.includes(
+    capability
+  );
+
+}
+
+
+function verifyModelCapability(
+  modelId,
+  capability
+) {
+
+  const model =
+    getModel(modelId);
+
+  if (!model) {
+
+    return {
+      verified: false,
+      reason: 'Model not found.'
+    };
+
+  }
+
+  const supported =
+    modelSupportsCapability(
+      model,
+      capability
+    );
+
+  return {
+    verified: supported,
+    modelId: model.id,
+    providerId: model.providerId,
+    capability,
+    reason: supported
+      ? 'Capability is supported.'
+      : 'Model does not support this capability.'
+  };
+
+}
+
+
+function getCompatibleModels(
+  capability
+) {
+
+  return Object.values(AI_MODELS)
+    .filter(model =>
+      model.enabled &&
+      modelSupportsCapability(
+        model,
+        capability
+      )
+    );
+
+}
 
 function getModelsForCapability(capability) {
 
