@@ -187,7 +187,193 @@ function getAvailableGatewayModels() {
     );
 
       }
+ 
 
+/* =================================
+   AI MODEL DISCOVERY
+================================= */
+
+function normalizeDiscoveredModel(model, providerId) {
+
+  const methods =
+    Array.isArray(
+      model?.supportedGenerationMethods
+    )
+      ? model.supportedGenerationMethods
+      : [];
+
+  const capabilities = [];
+
+  if (
+    methods.includes('generateContent')
+  ) {
+    capabilities.push(
+      AI_CAPABILITIES.TEXT
+    );
+  }
+
+  return {
+    id:
+      model?.name ||
+      model?.model ||
+      'unknown-model',
+
+    providerId,
+
+    name:
+      model?.displayName ||
+      model?.name ||
+      'Unknown Model',
+
+    capabilities,
+
+    access: 'unknown',
+
+    enabled: true,
+
+    discovery: 'provider',
+
+    supportedGenerationMethods:
+      methods,
+
+    description:
+      model?.description ||
+      '',
+
+    discoveredAt:
+      new Date().toISOString()
+  };
+
+}
+
+
+async function discoverGeminiModels() {
+
+  const apiKey =
+    process.env.GEMINI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error(
+      'GEMINI_API_KEY is not configured.'
+    );
+  }
+
+  const response =
+    await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models',
+      {
+        method: 'GET',
+
+        headers: {
+          'x-goog-api-key': apiKey
+        }
+      }
+    );
+
+  const data =
+    await response.json();
+
+  if (!response.ok) {
+
+    throw new Error(
+      data?.error?.message ||
+      'Gemini model discovery failed.'
+    );
+
+  }
+
+  const models =
+    Array.isArray(data?.models)
+      ? data.models
+      : [];
+
+  return models.map(model =>
+    normalizeDiscoveredModel(
+      model,
+      'gemini'
+    )
+  );
+
+}
+
+
+async function discoverProviderModels(
+  providerId
+) {
+
+  if (providerId === 'gemini') {
+
+    return await discoverGeminiModels();
+
+  }
+
+  throw new Error(
+    `Model discovery is not yet supported for provider: ${providerId}`
+  );
+
+}
+
+
+function mergeDiscoveredModels(
+  discoveredModels
+) {
+
+  if (
+    !Array.isArray(discoveredModels)
+  ) {
+    return;
+  }
+
+  discoveredModels.forEach(model => {
+
+    if (!model?.id) {
+      return;
+    }
+
+    const existingKey =
+      Object.keys(AI_MODELS)
+        .find(key =>
+          AI_MODELS[key]?.id === model.id
+        );
+
+    if (existingKey) {
+
+      AI_MODELS[existingKey] = {
+        ...AI_MODELS[existingKey],
+        ...model
+      };
+
+      return;
+
+    }
+
+    const safeKey =
+      `discovered_${String(model.id)
+        .replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+
+    AI_MODELS[safeKey] = model;
+
+  });
+
+}
+
+
+async function refreshProviderModels(
+  providerId
+) {
+
+  const discoveredModels =
+    await discoverProviderModels(
+      providerId
+    );
+
+  mergeDiscoveredModels(
+    discoveredModels
+  );
+
+  return discoveredModels;
+
+    }
 async function generateWithGeminiDirector(body) {
 
   const apiKey =
