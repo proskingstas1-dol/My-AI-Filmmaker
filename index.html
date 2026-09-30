@@ -4043,6 +4043,332 @@ ${result}`
   openTab('assets');
   };
   
+<!-- =================================
+     AI MODEL SWITCH APPROVAL POPUP
+================================= -->
+
+<div
+  id="aiModelSwitchOverlay"
+  class="ai-model-switch-overlay"
+  hidden
+>
+
+  <div
+    id="aiModelSwitchPopup"
+    class="ai-model-switch-popup"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="aiModelSwitchTitle"
+  >
+
+    <div class="ai-model-switch-icon">
+      ⚡
+    </div>
+
+    <div
+      id="aiModelSwitchTitle"
+      class="ai-model-switch-title"
+    >
+      Model Switch Required
+    </div>
+
+    <div
+      id="aiModelSwitchReason"
+      class="ai-model-switch-reason"
+    >
+      The current AI model is unavailable.
+    </div>
+
+    <div class="ai-model-switch-models">
+
+      <div class="ai-model-switch-model">
+
+        <div class="ai-model-switch-label">
+          CURRENT MODEL
+        </div>
+
+        <div
+          id="aiModelSwitchCurrent"
+          class="ai-model-switch-name"
+        >
+          —
+        </div>
+
+      </div>
+
+      <div class="ai-model-switch-arrow">
+        ↓
+      </div>
+
+      <div class="ai-model-switch-model">
+
+        <div class="ai-model-switch-label">
+          NEXT MODEL
+        </div>
+
+        <div
+          id="aiModelSwitchNext"
+          class="ai-model-switch-name"
+        >
+          —
+        </div>
+
+        <div
+          id="aiModelSwitchAccess"
+          class="ai-model-switch-access"
+        >
+          —
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="ai-model-switch-actions">
+
+      <button
+        type="button"
+        id="aiModelSwitchCancel"
+        class="ai-model-switch-cancel"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        id="aiModelSwitchContinue"
+        class="ai-model-switch-continue"
+      >
+        Continue
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<style>
+
+/* =================================
+   AI MODEL SWITCH POPUP
+================================= */
+
+.ai-model-switch-overlay {
+
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 99999;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 20px;
+
+  background:
+    rgba(8, 8, 18, 0.48);
+
+  backdrop-filter:
+    blur(14px);
+
+  -webkit-backdrop-filter:
+    blur(14px);
+
+}
+
+
+.ai-model-switch-overlay[hidden] {
+
+  display: none;
+
+}
+
+
+.ai-model-switch-popup {
+
+  width: min(
+    100%,
+    390px
+  );
+
+  padding: 24px;
+
+  border-radius: 28px;
+
+  background:
+    rgba(28, 24, 45, 0.94);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.12);
+
+  box-shadow:
+    0 24px 70px
+    rgba(0,0,0,0.38);
+
+  color: white;
+
+  text-align: center;
+
+}
+
+
+.ai-model-switch-icon {
+
+  font-size: 30px;
+
+  margin-bottom: 8px;
+
+}
+
+
+.ai-model-switch-title {
+
+  font-size: 21px;
+
+  font-weight: 700;
+
+}
+
+
+.ai-model-switch-reason {
+
+  margin-top: 8px;
+
+  font-size: 14px;
+
+  line-height: 1.45;
+
+  opacity: 0.78;
+
+}
+
+
+.ai-model-switch-models {
+
+  margin-top: 20px;
+
+}
+
+
+.ai-model-switch-model {
+
+  padding: 14px;
+
+  border-radius: 18px;
+
+  background:
+    rgba(255,255,255,0.07);
+
+}
+
+
+.ai-model-switch-label {
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  letter-spacing: 1px;
+
+  opacity: 0.55;
+
+}
+
+
+.ai-model-switch-name {
+
+  margin-top: 5px;
+
+  font-size: 15px;
+
+  font-weight: 600;
+
+  word-break: break-word;
+
+}
+
+
+.ai-model-switch-access {
+
+  margin-top: 5px;
+
+  font-size: 12px;
+
+  opacity: 0.7;
+
+}
+
+
+.ai-model-switch-arrow {
+
+  padding: 7px;
+
+  font-size: 20px;
+
+  opacity: 0.65;
+
+}
+
+
+.ai-model-switch-actions {
+
+  display: flex;
+
+  gap: 10px;
+
+  margin-top: 20px;
+
+}
+
+
+.ai-model-switch-actions button {
+
+  flex: 1;
+
+  min-height: 46px;
+
+  border: 0;
+
+  border-radius: 15px;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+}
+
+
+.ai-model-switch-cancel {
+
+  background:
+    rgba(255,255,255,0.09);
+
+  color: white;
+
+}
+
+
+.ai-model-switch-continue {
+
+  background:
+    rgba(125, 83, 255, 0.95);
+
+  color: white;
+
+}
+
+</style>
+
+
 </script>
 </body>
 </html>
