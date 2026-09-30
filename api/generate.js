@@ -228,7 +228,65 @@ function getCompatibleModels(
     );
 
 }
+/* =================================
+   AI FREE-FIRST ENGINE
+================================= */
 
+function getFreeCompatibleModels(
+  capability
+) {
+
+  return getCompatibleModels(
+    capability
+  ).filter(model =>
+    model.access === 'free'
+  );
+
+}
+
+
+function getPaidCompatibleModels(
+  capability
+) {
+
+  return getCompatibleModels(
+    capability
+  ).filter(model =>
+    model.access === 'paid'
+  );
+
+}
+
+
+function getFreeFirstCandidates(
+  capability
+) {
+
+  const freeModels =
+    getFreeCompatibleModels(
+      capability
+    );
+
+  const paidModels =
+    getPaidCompatibleModels(
+      capability
+    );
+
+  return {
+    capability,
+
+    free: freeModels,
+
+    paid: paidModels,
+
+    hasFreeModels:
+      freeModels.length > 0,
+
+    hasPaidModels:
+      paidModels.length > 0
+  };
+
+}
 function getModelsForCapability(capability) {
 
   return Object.values(AI_MODELS)
