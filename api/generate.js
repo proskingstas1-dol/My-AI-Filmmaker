@@ -214,7 +214,7 @@ function verifyModelCapability(
 }
 
 
-function getCompatibleModels(
+      function getCompatibleModels(
   capability
 ) {
 
@@ -228,6 +228,8 @@ function getCompatibleModels(
     );
 
 }
+
+
 /* =================================
    AI FREE-FIRST ENGINE
 ================================= */
@@ -261,7 +263,35 @@ function getPaidCompatibleModels(
 function getFreeFirstCandidates(
   capability
 ) {
-  /* =================================
+
+  const freeModels =
+    getFreeCompatibleModels(
+      capability
+    );
+
+  const paidModels =
+    getPaidCompatibleModels(
+      capability
+    );
+
+  return {
+    capability,
+
+    free: freeModels,
+
+    paid: paidModels,
+
+    hasFreeModels:
+      freeModels.length > 0,
+
+    hasPaidModels:
+      paidModels.length > 0
+  };
+
+}
+
+
+/* =================================
    AI FALLBACK ENGINE
 ================================= */
 
@@ -358,42 +388,25 @@ function chooseNextFallback(
 
 }
 
-  const freeModels =
-    getFreeCompatibleModels(
-      capability
-    );
 
-  const paidModels =
-    getPaidCompatibleModels(
-      capability
-    );
-  return {
-    capability,
-
-    free: freeModels,
-
-    paid: paidModels,
-
-    hasFreeModels:
-      freeModels.length > 0,
-
-    hasPaidModels:
-      paidModels.length > 0
-  };
-
-}
-function getModelsForCapability(capability) {
+function getModelsForCapability(
+  capability
+) {
 
   return Object.values(AI_MODELS)
     .filter(model =>
       model.enabled &&
-      model.capabilities.includes(capability)
+      model.capabilities.includes(
+        capability
+      )
     );
 
 }
 
 
-function getModel(modelId) {
+function getModel(
+  modelId
+) {
 
   return (
     Object.values(AI_MODELS)
@@ -412,7 +425,8 @@ function getAvailableGatewayModels() {
       model.enabled
     );
 
-      }
+    }
+    
  
 
 /* =================================
