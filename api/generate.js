@@ -261,6 +261,102 @@ function getPaidCompatibleModels(
 function getFreeFirstCandidates(
   capability
 ) {
+  /* =================================
+   AI FALLBACK ENGINE
+================================= */
+
+function getFallbackCandidates(
+  capability,
+  failedModelId = null
+) {
+
+  const candidates =
+    getFreeFirstCandidates(
+      capability
+    );
+
+  const freeFallbacks =
+    candidates.free.filter(model =>
+      model.id !== failedModelId
+    );
+
+  const paidFallbacks =
+    candidates.paid.filter(model =>
+      model.id !== failedModelId
+    );
+
+  return {
+    capability,
+
+    failedModelId,
+
+    freeFallbacks,
+
+    paidFallbacks,
+
+    hasFreeFallback:
+      freeFallbacks.length > 0,
+
+    hasPaidFallback:
+      paidFallbacks.length > 0
+  };
+
+}
+
+
+function chooseNextFallback(
+  capability,
+  failedModelId = null
+) {
+
+  const fallback =
+    getFallbackCandidates(
+      capability,
+      failedModelId
+    );
+
+  if (
+    fallback.freeFallbacks.length > 0
+  ) {
+
+    return {
+      found: true,
+      requiresApproval: true,
+      access: 'free',
+      model:
+        fallback.freeFallbacks[0],
+      reason:
+        'A compatible free model is available.'
+    };
+
+  }
+
+  if (
+    fallback.paidFallbacks.length > 0
+  ) {
+
+    return {
+      found: true,
+      requiresApproval: true,
+      access: 'paid',
+      model:
+        fallback.paidFallbacks[0],
+      reason:
+        'No compatible free fallback is available. A paid model is available.'
+    };
+
+  }
+
+  return {
+    found: false,
+    requiresApproval: false,
+    access: null,
+    model: null,
+    reason:
+      'No compatible fallback model is available.'
+  };
+
+}
 
   const freeModels =
     getFreeCompatibleModels(
@@ -271,7 +367,6 @@ function getFreeFirstCandidates(
     getPaidCompatibleModels(
       capability
     );
-
   return {
     capability,
 
