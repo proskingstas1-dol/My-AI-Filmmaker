@@ -4595,6 +4595,14 @@ window.testAIModelSwitchPopup =
     });
 
   };
+  document
+  .getElementById('testAIModelSwitchButton')
+  ?.addEventListener(
+    'click',
+    () => {
+      testAIModelSwitchPopup();
+    }
+  );
 </script>
 </body>
 </html>
