@@ -4067,89 +4067,171 @@ ${result}`
      AI MODEL SWITCH APPROVAL POPUP
 ================================= -->
 
+<!-- STEP 7D — AI MODEL SWITCH POPUP -->
+
 <div
   id="aiModelSwitchOverlay"
-  class="ai-model-switch-overlay"
   hidden
+  style="
+    position:fixed;
+    inset:0;
+    z-index:99999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:rgba(0,0,0,0.42);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+  "
 >
-
   <div
     id="aiModelSwitchPopup"
-    class="ai-model-switch-popup"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="aiModelSwitchTitle"
+    style="
+      width:min(420px,100%);
+      padding:24px;
+      border-radius:24px;
+      background:rgba(25,25,35,0.96);
+      color:white;
+      box-shadow:0 24px 70px rgba(0,0,0,0.45);
+      text-align:center;
+    "
   >
 
-    <div class="ai-model-switch-icon">
-      ⚡
+    <div style="font-size:30px;margin-bottom:8px;">
+      🔄
     </div>
 
     <div
-      id="aiModelSwitchTitle"
-      class="ai-model-switch-title"
+      style="
+        font-size:21px;
+        font-weight:700;
+      "
     >
-      Model Switch Required
+      Switch AI Model?
     </div>
 
     <div
       id="aiModelSwitchReason"
-      class="ai-model-switch-reason"
+      style="
+        margin-top:8px;
+        font-size:14px;
+        line-height:1.45;
+        opacity:0.78;
+      "
     >
-      The current AI model is unavailable.
+      The current model is unavailable.
     </div>
 
-    <div class="ai-model-switch-models">
+    <div style="margin-top:20px;">
 
-      <div class="ai-model-switch-model">
-
-        <div class="ai-model-switch-label">
+      <div
+        style="
+          padding:14px;
+          border-radius:18px;
+          background:rgba(255,255,255,0.07);
+        "
+      >
+        <div
+          style="
+            font-size:10px;
+            font-weight:700;
+            letter-spacing:1px;
+            opacity:0.55;
+          "
+        >
           CURRENT MODEL
         </div>
 
         <div
           id="aiModelSwitchCurrent"
-          class="ai-model-switch-name"
+          style="
+            margin-top:5px;
+            font-size:15px;
+            font-weight:600;
+            word-break:break-word;
+          "
         >
-          —
+          Current model
         </div>
-
       </div>
 
-      <div class="ai-model-switch-arrow">
+      <div
+        style="
+          padding:7px;
+          font-size:20px;
+          opacity:0.65;
+        "
+      >
         ↓
       </div>
 
-      <div class="ai-model-switch-model">
-
-        <div class="ai-model-switch-label">
+      <div
+        style="
+          padding:14px;
+          border-radius:18px;
+          background:rgba(255,255,255,0.07);
+        "
+      >
+        <div
+          style="
+            font-size:10px;
+            font-weight:700;
+            letter-spacing:1px;
+            opacity:0.55;
+          "
+        >
           NEXT MODEL
         </div>
 
         <div
           id="aiModelSwitchNext"
-          class="ai-model-switch-name"
+          style="
+            margin-top:5px;
+            font-size:15px;
+            font-weight:600;
+            word-break:break-word;
+          "
         >
-          —
+          Alternative model
         </div>
 
         <div
           id="aiModelSwitchAccess"
-          class="ai-model-switch-access"
+          style="
+            margin-top:5px;
+            font-size:12px;
+            opacity:0.7;
+          "
         >
-          —
+          Availability unknown
         </div>
-
       </div>
 
     </div>
 
-    <div class="ai-model-switch-actions">
+    <div
+      style="
+        display:flex;
+        gap:10px;
+        margin-top:20px;
+      "
+    >
 
       <button
         type="button"
         id="aiModelSwitchCancel"
-        class="ai-model-switch-cancel"
+        style="
+          flex:1;
+          min-height:46px;
+          border:0;
+          border-radius:15px;
+          font-size:14px;
+          font-weight:700;
+          cursor:pointer;
+          background:rgba(255,255,255,0.09);
+          color:white;
+        "
       >
         Cancel
       </button>
@@ -4157,7 +4239,17 @@ ${result}`
       <button
         type="button"
         id="aiModelSwitchContinue"
-        class="ai-model-switch-continue"
+        style="
+          flex:1;
+          min-height:46px;
+          border:0;
+          border-radius:15px;
+          font-size:14px;
+          font-weight:700;
+          cursor:pointer;
+          background:rgba(125,83,255,0.95);
+          color:white;
+        "
       >
         Continue
       </button>
@@ -4165,242 +4257,25 @@ ${result}`
     </div>
 
   </div>
-
 </div>
 
+<script>
 
-<style>
-
-/* =================================
-   AI MODEL SWITCH POPUP
-================================= */
-
-.ai-model-switch-overlay {
-
-  position: fixed;
-
-  inset: 0;
-
-  z-index: 99999;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  padding: 20px;
-
-  background:
-    rgba(8, 8, 18, 0.48);
-
-  backdrop-filter:
-    blur(14px);
-
-  -webkit-backdrop-filter:
-    blur(14px);
-
-}
-
-
-.ai-model-switch-overlay[hidden] {
-
-  display: none;
-
-}
-
-
-.ai-model-switch-popup {
-
-  width: min(
-    100%,
-    390px
-  );
-
-  padding: 24px;
-
-  border-radius: 28px;
-
-  background:
-    rgba(28, 24, 45, 0.94);
-
-  border:
-    1px solid
-    rgba(255,255,255,0.12);
-
-  box-shadow:
-    0 24px 70px
-    rgba(0,0,0,0.38);
-
-  color: white;
-
-  text-align: center;
-
-}
-
-
-.ai-model-switch-icon {
-
-  font-size: 30px;
-
-  margin-bottom: 8px;
-
-}
-
-
-.ai-model-switch-title {
-
-  font-size: 21px;
-
-  font-weight: 700;
-
-}
-
-
-.ai-model-switch-reason {
-
-  margin-top: 8px;
-
-  font-size: 14px;
-
-  line-height: 1.45;
-
-  opacity: 0.78;
-
-}
-
-
-.ai-model-switch-models {
-
-  margin-top: 20px;
-
-}
-
-
-.ai-model-switch-model {
-
-  padding: 14px;
-
-  border-radius: 18px;
-
-  background:
-    rgba(255,255,255,0.07);
-
-}
-
-
-.ai-model-switch-label {
-
-  font-size: 10px;
-
-  font-weight: 700;
-
-  letter-spacing: 1px;
-
-  opacity: 0.55;
-
-}
-
-
-.ai-model-switch-name {
-
-  margin-top: 5px;
-
-  font-size: 15px;
-
-  font-weight: 600;
-
-  word-break: break-word;
-
-}
-
-
-.ai-model-switch-access {
-
-  margin-top: 5px;
-
-  font-size: 12px;
-
-  opacity: 0.7;
-
-}
-
-
-.ai-model-switch-arrow {
-
-  padding: 7px;
-
-  font-size: 20px;
-
-  opacity: 0.65;
-
-}
-
-
-.ai-model-switch-actions {
-
-  display: flex;
-
-  gap: 10px;
-
-  margin-top: 20px;
-
-}
-
-
-.ai-model-switch-actions button {
-
-  flex: 1;
-
-  min-height: 46px;
-
-  border: 0;
-
-  border-radius: 15px;
-
-  font-size: 14px;
-
-  font-weight: 700;
-
-  cursor: pointer;
-
-}
-
-
-.ai-model-switch-cancel {
-
-  background:
-    rgba(255,255,255,0.09);
-
-  color: white;
-
-}
-
-
-.ai-model-switch-continue {
-
-  background:
-    rgba(125, 83, 255, 0.95);
-
-  color: white;
-
-}
-
-</style>
-
-/* =================================
-   STEP 7B — AI MODEL SWITCH CONTROLLER
-================================= */
+/* STEP 7B — AI MODEL SWITCH CONTROLLER */
 
 let aiModelSwitchResolver = null;
 
 function openAIModelSwitchPopup(options = {}){
 
   const overlay =
-    document.getElementById('aiModelSwitchOverlay');
+    document.getElementById(
+      'aiModelSwitchOverlay'
+    );
 
   if(!overlay){
-    console.error('AI Model Switch popup not found.');
+    console.error(
+      'AI Model Switch popup not found.'
+    );
     return Promise.resolve(false);
   }
 
@@ -4446,9 +4321,7 @@ function openAIModelSwitchPopup(options = {}){
   overlay.hidden = false;
 
   return new Promise(resolve => {
-
     aiModelSwitchResolver = resolve;
-
   });
 }
 
@@ -4456,7 +4329,9 @@ function openAIModelSwitchPopup(options = {}){
 function closeAIModelSwitchPopup(result){
 
   const overlay =
-    document.getElementById('aiModelSwitchOverlay');
+    document.getElementById(
+      'aiModelSwitchOverlay'
+    );
 
   if(overlay){
     overlay.hidden = true;
@@ -4470,7 +4345,6 @@ function closeAIModelSwitchPopup(result){
     aiModelSwitchResolver = null;
 
     resolve(result);
-
   }
 
 }
@@ -4485,8 +4359,8 @@ document
     () => {
 
       closeAIModelSwitchPopup({
-        approved: false,
-        action: 'cancel'
+        approved:false,
+        action:'cancel'
       });
 
     }
@@ -4502,8 +4376,8 @@ document
     () => {
 
       closeAIModelSwitchPopup({
-        approved: true,
-        action: 'continue'
+        approved:true,
+        action:'continue'
       });
 
     }
@@ -4524,8 +4398,8 @@ document
       ){
 
         closeAIModelSwitchPopup({
-          approved: false,
-          action: 'cancel'
+          approved:false,
+          action:'cancel'
         });
 
       }
@@ -4540,9 +4414,7 @@ document.addEventListener(
   'keydown',
   event => {
 
-    if(
-      event.key === 'Escape'
-    ){
+    if(event.key === 'Escape'){
 
       const overlay =
         document.getElementById(
@@ -4555,8 +4427,8 @@ document.addEventListener(
       ){
 
         closeAIModelSwitchPopup({
-          approved: false,
-          action: 'cancel'
+          approved:false,
+          action:'cancel'
         });
 
       }
@@ -4567,27 +4439,10 @@ document.addEventListener(
 );
 
 
-/* TEST HELPER
-   This only opens the popup.
-   It does NOT perform a model switch.
-*/
+/* TEST HELPER */
 
 window.testAIModelSwitchPopup =
   function(){
-
-    const overlay =
-      document.getElementById(
-        'aiModelSwitchOverlay'
-      );
-
-    if(!overlay){
-      alert('Model Switch popup element not found.');
-      return;
-    }
-
-    overlay.hidden = false;
-
-  };
 
     return openAIModelSwitchPopup({
 
@@ -4609,14 +4464,23 @@ window.testAIModelSwitchPopup =
     });
 
   };
-  document
-  .getElementById('testAIModelSwitchButton')
+
+
+/* TEST BUTTON */
+
+document
+  .getElementById(
+    'testAIModelSwitchButton'
+  )
   ?.addEventListener(
     'click',
     () => {
+
       testAIModelSwitchPopup();
+
     }
   );
-</script>
+
+</script> 
 </body>
 </html>
