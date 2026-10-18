@@ -1738,8 +1738,8 @@ if('serviceWorker' in navigator){
 
   const shot=shots[i];
 
-  $('sceneSelect').value=String(x.index);
-  refreshScenes();
+    $('sceneSelect').value=String(x.index);
+  openTab('prompts');
 
   $('promptOut').value=
 `🎬 FILM: ${p.title||'My Film'}
@@ -1790,7 +1790,6 @@ ${typeof characterBibleText==='function'?characterBibleText():'No Character Bibl
 GENERATION-READY PROMPT:
 ${shot.prompt||''}`;
 
-  openTab('prompts');
   toast('Shot sent to Prompt Builder');
 };
   $('v4SceneSelect')?.addEventListener('change',v4LoadSaved);
