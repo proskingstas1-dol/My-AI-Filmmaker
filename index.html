@@ -1117,7 +1117,19 @@ function addScene(){
  let s={name:$('sname').value,location:$('slocation').value,action:$('saction').value,camera:$('scamera').value,light:$('slight').value,dialogue:$('sdialogue').value};
  if(!s.name)return toast('Add a scene title');
  p.scenes.push(s);['sname','slocation','saction','scamera','slight','sdialogue'].forEach(x=>$(x).value='');
- save();renderScenes();toast('Scene added')
+ save();
+renderScenes();
+refreshScenes();
+
+if(typeof window.v4RefreshScenes==='function'){
+  window.v4RefreshScenes();
+}
+
+if(typeof csRefreshScenes==='function'){
+  csRefreshScenes();
+}
+
+toast('Scene added and selectors refreshed');
 }
 
 function renderScenes(){
