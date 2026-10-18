@@ -1156,7 +1156,10 @@ function buildPrompt(){
   const shots=Array.isArray(s.shots)?s.shots:[];
 
   if(shots.length){
-    const shot=shots[shots.length-1];
+    const sentShot=window.__v4PromptShot;
+const shot=(sentShot&&sentShot.sceneIndex===Number($('sceneSelect').value)&&shots[sentShot.shotIndex])
+  ? shots[sentShot.shotIndex]
+  : shots[shots.length-1];
 
     $('promptOut').value=
 `🎬 GENERATION-READY CINEMATIC PROMPT
@@ -1737,6 +1740,7 @@ if('serviceWorker' in navigator){
   save();
 
   const shot=shots[i];
+    window.__v4PromptShot={sceneIndex:x.index,shotIndex:i};
 
     $('sceneSelect').value=String(x.index);
   openTab('prompts');
