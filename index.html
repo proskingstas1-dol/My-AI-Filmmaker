@@ -160,7 +160,7 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:30px 10px}
 <p class="small">Build a consistent prompt for an external image/video model. This app does not secretly send anything anywhere.</p>
 <label>Choose scene</label><select id="sceneSelect" onchange="buildPrompt()"></select>
 <label>Generated prompt</label><textarea id="promptOut" style="min-height:260px"></textarea>
-<div class="row"><button class="primary" onclick="buildPrompt()">Build prompt</button><button class="secondary" onclick="copyText('promptOut')">Copy</button></div>
+<div class="row"><button class="primary" onclick="buildPrompt(true)">Build prompt</button><button class="secondary" onclick="copyText('promptOut')">Copy</button></div>
 </div></section>
 
 <section id="creationStudio" class="panel">
