@@ -1759,42 +1759,50 @@ if('serviceWorker' in navigator){
     render();
     toast('Previous shot settings restored');
   };
-      // Track shot edits for Undo.
+        // Track shot edits for Undo — one snapshot per editing session.
   const v4UndoBox = $('v4Shots');
 
   if (v4UndoBox && !v4UndoBox.dataset.undoBound) {
     v4UndoBox.dataset.undoBound = '1';
     const v4LastState = {};
+    const v4Dirty = {};
 
-    v4UndoBox.addEventListener('focusin', function(event) {
+    function v4GetShotIndex(event) {
       const match = event.target?.id?.match(
         /^v41(?:type|angle|movement|framing|subject|environment|style|duration|action|lighting|dialogue|continuity|prompt)(\d+)$/
       );
+      return match ? Number(match[1]) : null;
+    }
 
-      if (match) {
-        const i = Number(match[1]);
-        v4LastState[i] = v4CloneShot(collect()[i]);
-      }
+    v4UndoBox.addEventListener('focusin', function(event) {
+      const i = v4GetShotIndex(event);
+      if (i === null) return;
+
+      v4LastState[i] = v4CloneShot(collect()[i]);
+      v4Dirty[i] = false;
     });
 
     v4UndoBox.addEventListener('input', function(event) {
-      const match = event.target?.id?.match(
-        /^v41(?:type|angle|movement|framing|subject|environment|style|duration|action|lighting|dialogue|continuity|prompt)(\d+)$/
-      );
+      const i = v4GetShotIndex(event);
+      if (i === null || v4Dirty[i]) return;
 
-      if (!match) return;
+      const previous = v4LastState[i];
+      if (!previous) return;
 
-      const i = Number(match[1]);
-      if (!v4LastState[i]) return;
-
-      const current = collect()[i];
       const history = v4UndoHistory[i] || (v4UndoHistory[i] = []);
-
-      history.push(v4CloneShot(v4LastState[i]));
+      history.push(v4CloneShot(previous));
 
       if (history.length > V4_UNDO_LIMIT) history.shift();
 
-      v4LastState[i] = v4CloneShot(current);
+      v4Dirty[i] = true;
+    });
+
+    v4UndoBox.addEventListener('focusout', function(event) {
+      const i = v4GetShotIndex(event);
+      if (i === null) return;
+
+      v4LastState[i] = v4CloneShot(collect()[i]);
+      v4Dirty[i] = false;
     });
   }
   function collect(){return (window.__v4Shots||[]).map((sh,i)=>{const g=k=>$("v41"+k+i)?.value??sh[k]??'';const x={...sh,type:g('type'),angle:g('angle'),movement:g('movement'),framing:g('framing'),subject:g('subject'),environment:g('environment'),style:g('style'),duration:g('duration'),action:g('action'),lighting:g('lighting'),dialogue:g('dialogue'),continuity:g('continuity'),prompt:g('prompt')};return x})}
