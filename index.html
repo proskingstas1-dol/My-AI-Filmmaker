@@ -1218,7 +1218,7 @@ Maintain the exact character identity, hairstyle, clothing, accessories, age ran
 
 Do not redesign the characters between shots. Preserve continuity with the surrounding scenes. No unnecessary text or watermark.`;
 
-    toast('Generation-ready prompt built');
+    if(showToast) toast('Generation-ready prompt built');
     return;
   }
 
@@ -1254,7 +1254,7 @@ Photorealistic cinematic imagery, believable human movement, realistic anatomy, 
 
 Preserve character identity, appearance, clothing, hairstyle, accessories and visual anchors across shots. No unnecessary text or watermark.`;
 
-  toast('Generation-ready prompt built');
+  if(showToast) toast('Generation-ready prompt built');
  }
 
 async function copyText(id){
