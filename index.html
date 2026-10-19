@@ -1146,7 +1146,7 @@ function refreshScenes(){
  buildPrompt()
 }
 
-function buildPrompt(){
+function buildPrompt(showToast=false){
   if(!p.scenes.length){
     $('promptOut').value='Add a scene first.';
     return;
