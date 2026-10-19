@@ -1709,7 +1709,12 @@ if('serviceWorker' in navigator){
 <label>Dialogue / audio</label><textarea id="v41dialogue${i}">${esc4(sh.dialogue)}</textarea>
 <label>Continuity notes</label><textarea id="v41continuity${i}">${esc4(sh.continuity)}</textarea>
 <label>Generation-ready shot prompt</label><textarea id="v41prompt${i}" class="shot-prompt">${esc4(sh.prompt)}</textarea>
-<div class="shot-actions"><button class="secondary" onclick="v4RebuildShotWithFeedback(${i})">🔄 Rebuild Prompt</button><button class="secondary" onclick="v4CopyShot(${i})">📋 Copy Shot</button><button class="primary" onclick="v4SendShot(${i})">↪️ Send to Prompt Builder</button></div></div>`).join('');
+    <div class="shot-actions">
+    <button class="secondary" onclick="v4UndoShot(${i})">↩️ Undo</button>
+    <button class="secondary" onclick="v4RebuildShotWithFeedback(${i})">🔄 Rebuild Prompt</button>
+    <button class="secondary" onclick="v4CopyShot(${i})">📋 Copy Shot</button>
+    <button class="primary" onclick="v4SendShot(${i})">↪️ Send to Prompt Builder</button>
+    </div></div>`).join('');
   }
     // SHOT DIRECTOR UNDO HISTORY
   const v4UndoHistory = {};
